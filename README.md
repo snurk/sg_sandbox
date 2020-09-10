@@ -1,2 +1,2 @@
-# sg_sandbox
-Experimental String Graph construction and processing
+# String Graph Sandbox
+Experimental procedures for String Graph construction and processing
