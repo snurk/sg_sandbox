@@ -1,0 +1,6 @@
+[submodule "miniasm"]
+	path = miniasm
+	url = git@github.com:snurk/miniasm.git
+[submodule "gfacpp"]
+	path = gfacpp
+	url = git@github.com:snurk/gfacpp.git
