@@ -11,4 +11,4 @@ layout=$1
 awk '{print $1}' $layout > contig_names.txt
 cat $layout $2 > full_mapping.txt
 
-$(dirname $0)/resolve_layouts.py contig_names.txt full_mapping.txt > backbone_layout.txt
+$(dirname $(readlink -e $0))/../resolve_layouts.py contig_names.txt full_mapping.txt > backbone_layout.txt

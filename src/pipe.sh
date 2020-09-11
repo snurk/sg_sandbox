@@ -104,7 +104,7 @@ fi
 
 awk '/^S/{print ">"$2"\n"$3}' simplified.gfa | fold > simplified.nodes.fasta
 
-$scripts_root/resolve_mapping.py simplified.gfa microasm.gfa mapping.txt > resolved_mapping.txt
+$scripts_root/resolve_layouts.py simplified.gfa mapping.txt --miniasm microasm.gfa > resolved_mapping.txt
 
 $scripts_root/assign_coverage.py resolved_mapping.txt min_read.cov > simplified.cov
 

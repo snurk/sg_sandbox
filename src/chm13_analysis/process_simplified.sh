@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+scripts_root=$(dirname $(readlink -e $0))/..
+
 #processed=$1
 #init=$2
 processed=<...>
@@ -17,14 +19,13 @@ grep "^L" $processed >> $name.fixed.gfa
 #rm -f $name.tmp
 
 conda activate
-~/git/ngs_scripts/bogart_gfa/compress.py $name.fixed.gfa $name.tmp.gfa 2> $name.final_compress_mapping.txt
+$scripts_root/compact_gfa.py $name.fixed.gfa $name.tmp.gfa 2> $name.final_compress_mapping.txt
 
 cat $resolved_mapping $name.final_compress_mapping.txt > $name.mapping.txt
-touch stub.microasm.gfa
-~/git/ngs_scripts/bogart_gfa/resolve_mapping.py $name.tmp.gfa stub.microasm.gfa $name.mapping.txt > $name.resolved_mapping.txt
+$scripts_root/resolve_layouts.py $name.tmp.gfa $name.mapping.txt > $name.resolved_mapping.txt
 
-~/git/ngs_scripts/gfakluge/assign_coverage.py $name.resolved_mapping.txt $read_cov > $name.recompressed.cov
-~/git/ngs_scripts/gfakluge/inject_coverage.py $name.tmp.gfa $name.recompressed.cov > $name.recompressed.gfa
+$scripts_root/assign_coverage.py $name.resolved_mapping.txt $read_cov > $name.recompressed.cov
+$scripts_root/inject_coverage.py $name.tmp.gfa $name.recompressed.cov > $name.recompressed.gfa
 
 echo -e "H\tVN:Z:1.0" > $name.recompressed.noseq.gfa
-~/git/gfatools/gfatools view -S $name.recompressed.gfa >> $name.recompressed.noseq.gfa
+$scripts_root/../gfacpp/gfatools/gfatools view -S $name.recompressed.gfa >> $name.recompressed.noseq.gfa

@@ -33,7 +33,7 @@ for read_cnt_bound in 1 2 3 ; do
 
     #FIXME crazy inefficient
     echo "Resolving layout"
-    $scripts_root/resolve_mapping.py simplified.wip.gfa microasm.gfa mapping.txt > resolved_mapping.wip.txt
+    $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm microasm.gfa > resolved_mapping.wip.txt
     #To get read counts
     sed 's/ /,/g' resolved_mapping.wip.txt | awk -F"," '{print $1,NF-1}' > read_cnt.wip.txt
     echo "Read count aware tip clipping (read count bound $read_cnt_bound)"
@@ -124,7 +124,7 @@ else
         echo "Minimal coverage threshold set at $cov_thr"
 
         echo "Resolving layout"
-        $scripts_root/resolve_mapping.py simplified.wip.gfa microasm.gfa mapping.txt > resolved_mapping.wip.txt
+        $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm microasm.gfa > resolved_mapping.wip.txt
         echo "Assigning coverage"
         $scripts_root/assign_coverage.py resolved_mapping.wip.txt min_read.cov > simplified.wip.cov
         echo "Removing low coverage nodes iteration $weak_it (removing nodes with coverage < $cov_thr)"
@@ -137,7 +137,7 @@ else
         rm uncompressed.gfa
 
         #echo "Resolving layout"
-        #$scripts_root/resolve_mapping.py simplified.wip.gfa microasm.gfa mapping.txt > resolved_mapping.wip.txt
+        #$scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm microasm.gfa > resolved_mapping.wip.txt
         #echo "Assigning coverage"
         $scripts_root/assign_coverage.py resolved_mapping.wip.txt min_read.cov > simplified.wip.cov
         #echo "Removing links between nodes of widely different coverage $weak_it"
@@ -161,7 +161,7 @@ final_it_cnt=3
 for final_it in $(seq 1 $final_it_cnt) ; do
 
     echo "Resolving layout"
-    $scripts_root/resolve_mapping.py simplified.wip.gfa microasm.gfa mapping.txt > resolved_mapping.wip.txt
+    $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm microasm.gfa > resolved_mapping.wip.txt
     echo "Assigning coverage"
     $scripts_root/assign_coverage.py resolved_mapping.wip.txt min_read.cov > simplified.wip.cov
     echo "Killing loops"
@@ -179,7 +179,7 @@ for final_it in $(seq 1 $final_it_cnt) ; do
     rm uncompressed.gfa
 
     echo "Resolving layout"
-    $scripts_root/resolve_mapping.py simplified.wip.gfa microasm.gfa mapping.txt > resolved_mapping.wip.txt
+    $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm microasm.gfa > resolved_mapping.wip.txt
     echo "Assigning coverage"
     $scripts_root/assign_coverage.py resolved_mapping.wip.txt min_read.cov > simplified.wip.cov
     echo "Removing shortcuts"

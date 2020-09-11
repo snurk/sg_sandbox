@@ -5,7 +5,7 @@ from collections import defaultdict
 import argparse
 
 parser = argparse.ArgumentParser(description="Recursive resolution of the layouts")
-parser.add_argument("fragment_names", help="File with names of the fragments to resolve")
+parser.add_argument("fragment_names", help="File with names of the fragments to resolve (or .gfa file -- segment names will be extracted)")
 parser.add_argument("composition", help="File specifying composition of intermediate fragments")
 parser.add_argument("--duplicate-shift", type=int, default=0, help="Ids shift to do if dealing with multiple occurences of the same fragment")
 parser.add_argument("--partial-resolve", action="store_true", help="Allow 'partial' resolving of layout. By default fails if can't resolve down to path of readXXX fragments")
@@ -42,11 +42,25 @@ with open(args.composition, 'r') as compress_mapping:
 print("Loaded", file=sys.stderr)
 
 names = []
-print("Loading contig names", file=sys.stderr)
-with open(args.fragment_names, 'r') as names_handle:
-    for l in names_handle:
-        names.append(l.strip())
-print("Loaded", file=sys.stderr)
+
+if args.fragment_names.endswith('.gfa'):
+    print("Loading fragment names from GFA file", file=sys.stderr)
+    with open(args.fragment_names, 'r') as gfa_fn:
+        for l in gfa_fn:
+            if not l.startswith('S'):
+                continue
+
+            #TODO optimize for GFA with sequences
+            s = l.split()
+            assert s[0] == 'S'
+            name.append(s[1])
+    print("Loaded", file=sys.stderr)
+else:
+    print("Loading fragment names from text file", file=sys.stderr)
+    with open(args.fragment_names, 'r') as names_handle:
+        for l in names_handle:
+            names.append(l.strip())
+    print("Loaded", file=sys.stderr)
 
 def opposite_sign(o):
     if o == '+':
