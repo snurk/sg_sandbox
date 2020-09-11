@@ -8,6 +8,7 @@ if [ "$#" -lt 2 ]; then
     exit 239
 fi
 
+scripts_root=$(dirname $(readlink -e $0))
 bin=$1
 assembly=$2
 
@@ -36,12 +37,6 @@ fi
 #    echo "Weak overlap removal disabled"
 #else
 #    echo "Will use iterative weak_ovl thresholds" "${@:5}"
-#fi
-
-#if [ -f reads.renamed.fasta ]; then
-#    echo "File reads.renamed.fasta was found in the folder and will be reused"
-#else
-#    ~/git/ngs_scripts/canu_gap_analysis/rename_reads.py $reads $assembly/asm.seqStore/readNames.txt reads.renamed.fasta
 #fi
 
 if [ -f reads.compressed.fasta.gz ]; then
@@ -82,7 +77,6 @@ else
         $bin/ovStoreDump -bogart $assembly/unitigging/4-unitigger/asm.best.edges -nobogartcontained -nobogartcoveragegap -noredundant -nocontained -nocontainer -erate 0-$max_erate -paf -S $assembly/asm.seqStore/ -O $ovlstore | awk 'BEGIN { OFS = "\t"} {$1="read"$1; $6="read"$6; print $0}' > ovl.paf
     fi
 
-    #~/git/canu/Linux-amd64/bin/ovStoreDump -bogart assembly/unitigging/4-unitigger/asm.best.edges -nobogartcontained -nobogartsuspicious -nobogartspur -noredundant -nocontained -erate 0-0. -paf -S assembly/asm.seqStore/ -O assembly/unitigging/asm.ovlStore > ovl.paf
     if [ -f processed.gfa ]; then
         echo "File processed.gfa was found in the folder and will be reused"
 
@@ -92,10 +86,10 @@ else
         fi
     else
         echo "Building initial graph"
-        ~/git/ngs_scripts/gfakluge/build_graph.sh reads.compressed.fasta.gz ovl.paf $min_ovl
+        $scripts_root/build_graph.sh reads.compressed.fasta.gz ovl.paf $min_ovl
     fi
 
-    ~/git/ngs_scripts/gfakluge/iterate_microasm.sh processed.gfa $BUBBLE_DIFF ${@:5}
+    $scripts_root/iterate_microasm.sh processed.gfa $BUBBLE_DIFF ${@:5}
 fi
 
 if [ ! -f microasm.gfa ]; then
@@ -110,13 +104,13 @@ fi
 
 awk '/^S/{print ">"$2"\n"$3}' simplified.gfa | fold > simplified.nodes.fasta
 
-~/git/ngs_scripts/bogart_gfa/resolve_mapping.py simplified.gfa microasm.gfa mapping.txt > resolved_mapping.txt
+$scripts_root/resolve_mapping.py simplified.gfa microasm.gfa mapping.txt > resolved_mapping.txt
 
-~/git/ngs_scripts/gfakluge/assign_coverage.py resolved_mapping.txt min_read.cov > simplified.cov
+$scripts_root/assign_coverage.py resolved_mapping.txt min_read.cov > simplified.cov
 
 mv simplified.gfa no_cov.gfa
-~/git/ngs_scripts/gfakluge/inject_coverage.py no_cov.gfa simplified.cov > simplified.gfa
+$scripts_root/inject_coverage.py no_cov.gfa simplified.cov > simplified.gfa
 rm no_cov.gfa
 
 echo -e "H\tVN:Z:1.0" > simplified.noseq.gfa
-~/git/gfatools/gfatools view -S simplified.gfa >> simplified.noseq.gfa
+$scripts_root/../gfacpp/gfatools/gfatools view -S simplified.gfa >> simplified.noseq.gfa
