@@ -1,0 +1,18 @@
+#set up automatically if launched via launch.sh
+SCRIPT_PATH: '${SCRIPT_PATH}'
+
+CANU_BIN: '~/git/canu/Linux-amd64/bin'
+
+ASSEMBLY: '../assembly'
+
+MIN_OVERLAP: 1000
+
+OVERLAP_ERATE: '0.00001'
+
+WEAK_OVERLAP_THRESHOLDS:
+    - 2000
+    - 5000
+    - 7000
+    - 9000
+
+#ALL_DATA: false

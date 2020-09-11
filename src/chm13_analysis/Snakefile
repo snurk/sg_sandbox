@@ -1,0 +1,105 @@
+import tempfile
+import os
+import re
+import glob
+import time
+import math
+
+#basic variable setup
+configfile: 'config.yaml'
+
+CANU_BIN=config['CANU_BIN']
+ASSEMBLY=config['ASSEMBLY']
+BUBBLE_DIFF=config.get('BUBBLE_DIFF', 2000)
+
+localrules: all
+
+rule all:
+    input:
+        #'defensin/simplified.subgraph.quast/icarus.html',
+        #'fragmented_region/simplified.subgraph.quast/icarus.html',
+        #'all_bacs/simplified.subgraph.gfa',
+        'chr_analysis/finish.flag'
+
+rule microasm:
+    input:
+        ASSEMBLY + '/unitigging/4-unitigger/asm.best.edges'
+    output:
+        'simplified.noseq.gfa',
+        'simplified.gfa',
+        'simplified.nodes.fasta'
+    threads:
+        12
+    log:
+        'pipe.log'
+    params:
+        min_ovl=config['MIN_OVERLAP'],
+        ovl_er=config['OVERLAP_ERATE'],
+        weak_thrs=expand('{thr}', thr=config['WEAK_OVERLAP_THRESHOLDS'])
+    shell:
+        '''
+        export BUBBLE_DIFF={BUBBLE_DIFF}
+        ~/git/ngs_scripts/gfakluge/pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} {params.weak_thrs} &> {log}
+        '''
+
+rule mashmap:
+    input:
+        'simplified.nodes.fasta'
+    output:
+        'simplified.nodes.hg38.out'
+    threads:
+        16
+    log:
+        'mashmap.log'
+    shell:
+        '$SCRIPT_PATH/mashmap.sh {input} &> {log}'
+
+rule bac_subgraphs:
+    input:
+        'simplified.gfa'
+    output:
+        'all_bacs/simplified.subgraph.gfa'
+    #~/data/gfa_works/bacs/extract_broken_bac_subgraphs.sh &>> subgraphs.log
+    threads:
+        12
+    log:
+        'bac_subgraphs.log'
+    shell:
+        '$SCRIPT_PATH/extract_all_bac_subgraphs.sh &> {log}'
+
+rule subgraphs_of_interest:
+    input:
+        'simplified.gfa'
+    output:
+        'defensin/simplified.subgraph.gfa',
+        'fragmented_region/simplified.subgraph.gfa'
+    threads:
+        12
+    log:
+        'subgraphs.log'
+    shell:
+        '$SCRIPT_PATH/run_subgraphs.sh &> {log}'
+
+rule icarus:
+    input:
+        'defensin/simplified.subgraph.gfa',
+        'fragmented_region/simplified.subgraph.gfa'
+    output:
+        'defensin/simplified.subgraph.quast/icarus.html',
+        'fragmented_region/simplified.subgraph.quast/icarus.html'
+    threads:
+        12
+    log:
+        'icarus.log'
+    shell:
+        '$SCRIPT_PATH/run_icarus.sh &> {log}'
+
+rule chr_analysis:
+    input:
+        'simplified.nodes.hg38.out'
+    output:
+        touch('chr_analysis/finish.flag')
+    log:
+        'chr_analysis.log'
+    shell:
+        '$SCRIPT_PATH/chr_analysis.sh &> {log}'

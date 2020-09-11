@@ -1,0 +1,86 @@
+import os
+from glob import glob
+
+QUAST_MIN_IDY = 98.
+QUAST_MIN_ALIGN = 5000
+
+CHR_REF_ROOT = '/home/nurks2/data/chm13_v0p7/chr_analysis_compressed'
+
+def good_chr(c):
+    return os.stat('%s/%s.500k.fasta' % (CHR_REF_ROOT, c)).st_size > 0
+
+def read_chr_list(fn):
+    chrs = []
+    with open(fn, 'r') as f:
+        for l in f:
+            c = l.split()[0]
+            if good_chr(c):
+                chrs.append(c)
+    return chrs
+
+#CHRS, = glob_wildcards("{chr}.gfa")
+
+CHRS = read_chr_list('hg38.chronly.clr')
+
+rule all:
+    input:
+        'quast.tgz'
+
+def get_gfa(wildcards):
+    return glob('%s.*.gfa' % wildcards.chr)[0]
+
+rule node_sequences:
+    input:
+        all_seq = '../simplified.nodes.fasta',
+        gfa = get_gfa
+        #gfa = lambda wildcards: glob('%s.*.gfa' % wildcards.chr)[0]
+    output:
+        '{chr}.nodes.fasta'
+    shell:
+        '''
+        grep "^S" {input.gfa} | awk '{{print $2}}' > {wildcards.chr}.nodes.txt
+        seqtk subseq {input.all_seq} {wildcards.chr}.nodes.txt > {output}
+        '''
+
+rule quast:
+    input:
+        nodes='{chr}.nodes.fasta',
+        ref='%s/{chr}.500k.fasta' % CHR_REF_ROOT
+    output:
+        '{chr}.quast/icarus.html'
+    log:
+        '{chr}.quast.log'
+    threads:
+        8
+    #params:
+    #    ref = CHR_REF_ROOT + '{chr}.fasta'
+    shell:
+        '''
+        rm -rf $(dirname {output})
+        quast.py -o $(dirname {output}) -r {input.ref} --min-identity {QUAST_MIN_IDY} --min-alignment {QUAST_MIN_ALIGN} -t {threads} {input.nodes} &> {log}
+        '''
+
+rule quast_glennis:
+    input:
+        nodes = 'chr8.nodes.fasta',
+        ref = '/gpfs/gsfs7/users/nurks2/chm13_v0p7/chm13.chr8_v3.compressed.fasta'
+    output:
+        'chr8_glennis/icarus.html'
+    log:
+        'chr8_glennis.log'
+    threads:
+        8
+    shell:
+        '''
+        rm -rf $(dirname {output})
+        quast.py -o $(dirname {output}) -r {input.ref} --min-identity {QUAST_MIN_IDY} --min-alignment {QUAST_MIN_ALIGN} -t {threads} {input.nodes} &> {log}
+        '''
+
+rule pack:
+    input:
+        'chr8_glennis/icarus.html',
+        expand('{chr}.quast/icarus.html', chr=CHRS)
+    output:
+        'quast.tgz'
+    shell:
+        'find . -name "*.html" | tar cvzf {output} -T -'

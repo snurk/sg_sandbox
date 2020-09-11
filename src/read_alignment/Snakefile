@@ -1,0 +1,58 @@
+import tempfile
+import os
+import re
+import glob
+import time
+import math
+
+#basic variable setup
+configfile: 'config.yaml'
+
+READS=config['READS']
+REF=config['REF']
+
+rule all:
+    input:
+        'winnowmap.bam'
+
+rule winnowmap_index:
+    input: REF
+    output: 'ref.mmi'
+    log: 'index.log'
+    shell: 'winnowmap -d {output} {input} &> {log}'
+
+rule bad_kmers:
+    input: REF
+    output: touch('bad_kmers.txt')
+    #output: 'bad_kmers.txt'
+    params:
+        k=19,
+        perc=0.9998
+    #shell:
+    #    '''
+    #    meryl count k={params.k} output merylDB_k{params.k} {input}
+    #    meryl print greater-than distinct={params.perc} merylDB_k{params.k} > {output}
+    #    '''
+
+rule winnowmap:
+    input:
+        reads=READS + '.split{s}.fasta.gz',
+        ref=REF,
+        #index='ref.mmi',
+        bad_kmers='bad_kmers.txt'
+    output: 'split{s}.bam'
+    params:
+        k=19
+    threads: 9
+    log: 'split{s}.log'
+    shell: 'winnowmap -W {input.bad_kmers} -k {params.k} -a -x map-ont -t {threads} {input.ref} {input.reads} 2> {log} | samtools view -b -F 4 > {output}'
+
+def partial_bams(wildcards):
+    parts, = glob_wildcards(READS + '.split{s}.fasta.gz')
+    return expand('split{s}.bam', s=parts)
+
+rule aggregate_bams:
+    input: partial_bams
+    output: 'winnowmap.bam'
+    shell:
+        'samtools cat {input} > {output}'

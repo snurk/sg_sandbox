@@ -1,0 +1,182 @@
+import tempfile
+import os
+import re
+import glob
+import time
+import math
+
+BIN='~/git/canu2/Linux-amd64/bin'
+SEQ_STORE='../../raw_seqstore_works/asm.seqStore'
+#ovlstore=../../assembly/unitigging/asm.ovlStore
+OVL_STORE='../../assembly/unitigging/4-unitigger/asm.0.all.ovlStore'
+
+CNS_PRE='cns'
+#seqstore=../../../assembly/asm.seqStore
+
+rule all:
+    input:
+        'v07.bam',
+        'joined.fasta',
+        'cns.renamed.info'
+
+rule joined:
+    input:
+        utgs='../../8k/simplified.nodes.fasta',
+        utg_layout='layout.txt',
+        gfa='../../8k/simplified.noseq.gfa'
+    output:
+        'joined.fasta'
+    log:
+        'join.log'
+    shell:
+        '~/git/ngs_scripts/join_canu.py {input.utgs} {input.utg_layout} {input.gfa} {output} &> {log}'
+
+rule backbone_layout:
+    input:
+        utg_layout='layout.txt',
+        utg_composition='../resolved_mapping.txt'
+    output:
+        'backbone_layout.txt',
+        'contig_names.txt'
+    log:
+        'backbone.log'
+    shell:
+        '''
+        manual=edited_backbone_layout.txt
+        if [ -f $manual ] ; then
+            echo "Copying from $manual" > {log}
+            cp $manual backbone_layout.txt
+            awk '{{print $1}}' backbone_layout.txt > contig_names.txt
+        else
+            ~/git/ngs_scripts/gfakluge/consensus/resolve_layouts.sh {input.utg_layout} {input.utg_composition} &> {log}
+        fi
+        '''
+
+rule layout_reads:
+    input:
+        'backbone_layout.txt'
+    output:
+        touch('layout.done')
+    log:
+        'layout_reads.log'
+    params:
+        #seed=239,
+        #seed=1, #changed for chr10 (also later for chr18)
+        size=200000000
+    shell:
+      '{BIN}/layoutReads -S {SEQ_STORE} -O {OVL_STORE} -eg 0.00001 -eM 0.00001 -R {input} -seed $RANDOM_SEED -gs {params.size} -o {CNS_PRE} &> {log}'
+      #'{BIN}/layoutReads -S {SEQ_STORE} -O {OVL_STORE} -eg 0.00001 -eM 0.00001 -R {input} -seed {params.seed} -gs {params.size} -o {CNS_PRE} &> {log}'
+
+#  Magic values
+#    partitionSize    - make partitions this big, relative to the biggest contig
+#                       0.10 - each big contig gets its own partition
+#    partitionScaling - expect contigs to expand by this much due to homopoly compression
+#                       1.50 - 50% expansion of contig length, affects memory estimate
+#    partitionTigs    - put this many reads (as fraction of total) in a partition
+#                       0.01 - puts small contigs into many partitions
+
+checkpoint partition:
+    input:
+        'layout.done'
+    output:
+        touch('partitioning.done')
+    log:
+        'partitioning.log'
+    shell:
+        '{BIN}/utgcns -V -S {SEQ_STORE} -T {CNS_PRE}.ctgStore 1 -partition 0.10 1.50 0.01 &> {log}'
+
+#Add "-V -V -V " for debug info
+rule consensus:
+    input:
+        'partitioning.done'
+    output:
+        CNS_PRE + '-{part}.cns.fasta'
+    log:
+        CNS_PRE + '-{part}.cns.log'
+    threads: 8
+    params:
+        ovl_len=2000,
+        error_rate=0.08
+    shell:
+      '{BIN}/utgcns -V -V -V \
+        -R {CNS_PRE}.ctgStore/partition.{wildcards.part} \
+        -T {CNS_PRE}.ctgStore 1 \
+        -P {wildcards.part} \
+        -O {CNS_PRE}-{wildcards.part}.cns \
+        -A {output} \
+        -maxcoverage 50 \
+        -l {params.ovl_len} \
+        -e {params.error_rate} \
+        -threads {threads} &> {log}'
+
+def aggregate_input(wildcards):
+    checkpoint_output = checkpoints.partition.get().output[0]
+    parts, = glob_wildcards(CNS_PRE + '.ctgStore/partition.{part}')
+    return expand(CNS_PRE + '-{pp}.cns.fasta', pp=parts)
+
+rule collect:
+    input: aggregate_input
+    output:
+        'cns.result.fasta'
+    shell:
+        'cat {input} > {output}'
+
+rule rename:
+    input:
+        consensus='cns.result.fasta',
+        names='contig_names.txt'
+    output:
+        'cns.renamed.fasta'
+    shell:
+        '''
+        awk '{{print $0,NR}}' {input.names} > cns_name_map.txt
+        ~/git/ngs_scripts/canu_gap_analysis/rename_reads.py {input.consensus} cns_name_map.txt {output}
+        '''
+
+rule info:
+    input:
+        'cns.renamed.fasta'
+    output:
+        'cns.renamed.info'
+    shell:
+        '~/git/ngs_scripts/contig_processing/contig_info.py {input} {output}'
+
+v07_root='/data/PoreTenders/10x_v4CentromereXOnly/freebayes_serge/round2/splitBasedOnNCBI'
+
+rule relevant_ref_ctgs:
+    input:
+        assign=v07_root + '/chm13_v06_chr_contig_assignments.txt',
+        ref=v07_root + '/new_contigs.fasta'
+    output:
+        'v07.relevant.fasta'
+    shell:
+        '''
+        cat {input.assign} | awk -v C=$CHR '{{V="chr"$2; if (V == C) print $1}}' > v07.relevant.txt
+        seqtk subseq {input.ref} v07.relevant.txt > {output}
+        '''
+
+rule align_ref:
+    input:
+        query='cns.renamed.fasta',
+        ref='v07.relevant.fasta'
+    output:
+        'v07.bam'
+    log:
+        'v07.align.log'
+    threads: 6
+    shell:
+        '''
+        ~/git/ngs_scripts/gfakluge/contig_processing/align.sh {input.query} {input.ref} {output} 5 &> {log}
+        '''
+
+#rule align_full_ref:
+#    input:
+#        query='cns.renamed.fasta'
+#        ref=v07_root + '/new_contigs.fasta'
+#    output:
+#        'v07.full.bam'
+#    log:
+#        'v07.full.align.log'
+#    threads: 6
+#    shell:
+#        '~/git/ngs_scripts/gfakluge/contig_processing/align.sh {input.query} {input.ref} {output} 5 &> {log}'

@@ -1,0 +1,8 @@
+#set up automatically if launched via launch.sh
+#SCRIPT_PATH: '${SCRIPT_PATH}'
+
+READS: '/gpfs/gsfs7/users/nurks2/gfa_works/chm13v3/ONT/compressed.corrected.100'
+
+#WINNOWMAP: '~/git/Winnowmap/bin/winnowmap'
+
+REF: ''

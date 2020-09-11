@@ -1,0 +1,122 @@
+#!/bin/bash
+set -e
+
+if [ "$#" -lt 2 ]; then
+    echo "script.sh <canu bin> <canu assembly folder> [min_overlap = 2000] [max_erate = 0.001] [weak_overlaps...(default: disabled)]"
+    echo "NB: for HiFi analysis reads should be in homopolymer compressed space to match the overlaps"
+    echo "NB2!!!: never use max_erate higher than what was used by bogart"
+    exit 239
+fi
+
+bin=$1
+assembly=$2
+
+if [ "$#" -lt 3 ]; then
+    min_ovl=2000
+else
+    min_ovl=$3
+    echo "Will use min_ovl threshold of $min_ovl"
+fi
+
+if [ "$#" -lt 4 ]; then
+    max_erate=0.001
+else
+    max_erate=$4
+    echo "Will use overlap error threshold of $max_erate"
+fi
+
+if [ -z "$BUBBLE_DIFF" ]; then
+    echo "$BUBBLE_DIFF is unset using default 2Kb"
+    BUBBLE_DIFF=2000
+else
+    echo "BUBBLE_DIFF is set to $BUBBLE_DIFF"
+fi
+
+#if [ "$#" -lt 5 ]; then
+#    echo "Weak overlap removal disabled"
+#else
+#    echo "Will use iterative weak_ovl thresholds" "${@:5}"
+#fi
+
+#if [ -f reads.renamed.fasta ]; then
+#    echo "File reads.renamed.fasta was found in the folder and will be reused"
+#else
+#    ~/git/ngs_scripts/canu_gap_analysis/rename_reads.py $reads $assembly/asm.seqStore/readNames.txt reads.renamed.fasta
+#fi
+
+if [ -f reads.compressed.fasta.gz ]; then
+    echo "File reads.compressed.fasta.gz was found in the folder and will be reused"
+elif [ -f ../reads.compressed.fasta.gz ]; then
+    echo "File reads.compressed.fasta.gz was found in the folder and will be linked"
+    ln -sf ../reads.compressed.fasta.gz
+else
+    #-compressed -trimmed
+    echo "Getting reads from assembly folder"
+    $bin/sqStoreDumpFASTQ -S ../assembly/asm.seqStore -nolibname -noreadname -fasta -o reads.compressed.wip.gz
+    mv reads.compressed.wip.fasta.gz reads.compressed.fasta.gz
+fi
+
+ovlstore=$assembly/unitigging/4-unitigger/asm.0.all.ovlStore
+#ovlstore=$assembly/unitigging/asm.ovlStore
+
+if [ -f min_read.cov ]; then
+    echo "File min_read.cov was found in the folder and will be reused"
+elif [ -f ../min_read.cov ]; then
+    echo "File min_read.cov was found in the root folder and will be linked"
+    ln -sf ../min_read.cov
+else
+    echo "Getting read coverage estimates"
+    $bin/ovStoreDump -S $assembly/asm.seqStore -O $ovlstore -coverage -erate 0-$max_erate | tail -n+4 | awk '{print $1,$2}' > min_read.wip.cov
+    mv min_read.wip.cov min_read.cov
+fi
+
+if [ -f simplified.gfa ]; then
+    echo "File simplified.gfa was found in the folder and will be reused"
+else
+
+    if [ -f ovl.paf ]; then
+        echo "File ovl.paf was found in the folder and will be reused"
+    else
+        echo "Getting overlaps"
+        #-nobogartspur
+        $bin/ovStoreDump -bogart $assembly/unitigging/4-unitigger/asm.best.edges -nobogartcontained -nobogartcoveragegap -noredundant -nocontained -nocontainer -erate 0-$max_erate -paf -S $assembly/asm.seqStore/ -O $ovlstore | awk 'BEGIN { OFS = "\t"} {$1="read"$1; $6="read"$6; print $0}' > ovl.paf
+    fi
+
+    #~/git/canu/Linux-amd64/bin/ovStoreDump -bogart assembly/unitigging/4-unitigger/asm.best.edges -nobogartcontained -nobogartsuspicious -nobogartspur -noredundant -nocontained -erate 0-0. -paf -S assembly/asm.seqStore/ -O assembly/unitigging/asm.ovlStore > ovl.paf
+    if [ -f processed.gfa ]; then
+        echo "File processed.gfa was found in the folder and will be reused"
+
+        if [ ! -f microasm.gfa ]; then
+            echo "File microasm.gfa is missing"
+            exit 239
+        fi
+    else
+        echo "Building initial graph"
+        ~/git/ngs_scripts/gfakluge/build_graph.sh reads.compressed.fasta.gz ovl.paf $min_ovl
+    fi
+
+    ~/git/ngs_scripts/gfakluge/iterate_microasm.sh processed.gfa $BUBBLE_DIFF ${@:5}
+fi
+
+if [ ! -f microasm.gfa ]; then
+    echo "File microasm.gfa is missing"
+    exit 239
+fi
+
+if [ ! -f mapping.txt ]; then
+    echo "File mapping.txt is missing"
+    exit 239
+fi
+
+awk '/^S/{print ">"$2"\n"$3}' simplified.gfa | fold > simplified.nodes.fasta
+
+~/git/ngs_scripts/bogart_gfa/resolve_mapping.py simplified.gfa microasm.gfa mapping.txt > resolved_mapping.txt
+
+~/git/ngs_scripts/gfakluge/assign_coverage.py resolved_mapping.txt min_read.cov > simplified.cov
+
+mv simplified.gfa no_cov.gfa
+~/git/ngs_scripts/gfakluge/inject_coverage.py no_cov.gfa simplified.cov > simplified.gfa
+rm no_cov.gfa
+
+echo -e "H\tVN:Z:1.0" > simplified.noseq.gfa
+~/git/gfatools/gfatools view -S simplified.gfa >> simplified.noseq.gfa

@@ -1,0 +1,45 @@
+#!/bin/bash
+set -e
+
+module load bedtools
+
+#~/git/gfatools/gfatools view -S simplified.gfa > simplified.noseq.gfa
+
+mkdir -p chr_analysis
+cd chr_analysis
+
+ln -sf ~/data/gfa_works/hg38.chronly.clr
+ln -sf ~/data/gfa_works/hg38.chronly.compressed.bed
+
+# && $10 > 95.
+#Filter mappings
+awk '{if ($4 > 500000 + $3) print $0}' ../simplified.nodes.hg38.out | sort -k1,1 > filtered.out
+
+#Find nodes associated with a single chromosome
+awk '{print $1,$6}' filtered.out | sort | uniq | awk '{print $1}' | sort -k1,1 | uniq -u > good.nodes.txt
+
+#Take info about only good nodes
+join good.nodes.txt filtered.out > good.nodes.out
+
+awk '{print $6,$8,$9,$1,$10}' good.nodes.out | sed 's/ /\t/g' > good.nodes.bed
+bedtools coverage -a hg38.chronly.compressed.bed -b good.nodes.bed | sort -k 7 -n -r > frac.txt
+
+#under interactive job
+#~/useful_scripts/dump_coverage.sh assembly 0.00001 min_cov.txt
+
+#~/git/ngs_scripts/gfakluge/assign_coverage.py ../resolved_mapping.txt ../min_read.cov > simplified.cov
+
+rm -f chr*.txt chr*.log chr*.gfa
+for chr in $(awk {'print $1'} hg38.chronly.clr) ; do
+    echo "Processing $chr"
+    frac=$(grep "${chr}\s" frac.txt | awk '{print $7}' | grep -Po "\.\\d\\d" | sed 's/\.//g')
+    grep "${chr}\s" good.nodes.out | awk '{print $1}' | sort | uniq > $chr.txt
+    ~/git/ngs_scripts/gfakluge/neighborhood ../simplified.gfa $chr.$frac.gfa $chr.txt 10000 &> $chr.log
+    ~/git/ngs_scripts/gfakluge/neighborhood ../simplified.noseq.gfa $chr.$frac.noseq.gfa $chr.txt 10000 &> $chr.noseq.log
+done
+
+echo "Name,color,chr" > color.csv
+#get color.csv
+join <(awk '{print $6,$1}' good.nodes.out | sort | uniq | sort -k1,1) <(sort -k1,1 hg38.chronly.clr) | awk '{print $2,$3,$1}' | sed 's/ /,/g' >> color.csv
+
+cd -
