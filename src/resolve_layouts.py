@@ -53,7 +53,7 @@ if args.fragment_names.endswith('.gfa'):
             #TODO optimize for GFA with sequences
             s = l.split()
             assert s[0] == 'S'
-            name.append(s[1])
+            names.append(s[1])
     print("Loaded", file=sys.stderr)
 else:
     print("Loading fragment names from text file", file=sys.stderr)
