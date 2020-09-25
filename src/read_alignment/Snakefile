@@ -13,7 +13,8 @@ REF=config['REF']
 
 rule all:
     input:
-        'winnowmap.bam'
+        'winnowmap.bam',
+        'relevant.fasta'
 
 rule winnowmap_index:
     input: REF
@@ -36,7 +37,8 @@ rule bad_kmers:
 
 rule winnowmap:
     input:
-        reads=READS + '.split{s}.fasta.gz',
+        #reads=READS + '.split{s}.fasta.gz',
+        reads=READS,
         ref=REF,
         #index='ref.mmi',
         bad_kmers='bad_kmers.txt'
@@ -45,10 +47,34 @@ rule winnowmap:
         k=19
     threads: 9
     log: 'split{s}.log'
-    shell: 'winnowmap -W {input.bad_kmers} -k {params.k} -a -x map-ont -t {threads} {input.ref} {input.reads} 2> {log} | samtools view -b -F 4 > {output}'
+    shell: 'winnowmap --sv-off -W {input.bad_kmers} -k {params.k} -a -x map-ont -t {threads} {input.ref} {input.reads} 2> {log} | samtools view -b -F 4 > {output}'
+
+rule relevant_names:
+    input: '{name}.bam'
+    output: '{name}.relevant.txt'
+    shell: "samtools view {input} | awk '{{print $1}}' | sort | uniq > {output}"
+
+rule relevant_reads:
+    input:
+        names='split{s}.relevant.txt',
+        reads=READS
+    output: 'split{s}.relevant.fasta'
+    shell: 'seqtk subseq {input.reads} {input.names} > {output}'
+
+def partial_relevant(wildcards):
+    parts, = glob_wildcards(READS)
+    #parts, = glob_wildcards(READS + '.split{s}.fasta.gz')
+    return expand('split{s}.relevant.fasta', s=parts)
+
+rule aggregate_relevant:
+    input: partial_relevant
+    output: 'relevant.fasta'
+    shell:
+        'cat {input} > {output}'
 
 def partial_bams(wildcards):
-    parts, = glob_wildcards(READS + '.split{s}.fasta.gz')
+    parts, = glob_wildcards(READS)
+    #parts, = glob_wildcards(READS + '.split{s}.fasta.gz')
     return expand('split{s}.bam', s=parts)
 
 rule aggregate_bams:
@@ -56,3 +82,15 @@ rule aggregate_bams:
     output: 'winnowmap.bam'
     shell:
         'samtools cat {input} > {output}'
+
+rule sort_bam:
+    input: '{name}.bam'
+    output: '{name}.sorted.bam'
+    threads: 4
+    shell: 'samtools sort -m 50G --threads {threads} {input} > {output}'
+
+rule sniffles:
+    input: '{name}.sorted.bam'
+    output: '{name}.vcf'
+    threads: 8
+    shell: 'sniffles -n -1 -t {threads} -m {input} -v {output}'

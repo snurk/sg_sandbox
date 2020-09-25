@@ -10,7 +10,7 @@ dir=$(readlink -e $1)
 cd $(dirname "$0")
 export SCRIPT_PATH=$(readlink -e .)
 
-export PATH=~/git/Winnowmap/bin/:$PATH
+export PATH=~/git/Winnowmap/bin/:~/git/Sniffles/bin/sniffles-core-1.0.12/:$PATH
 module load samtools
 
 # -o /home/snurk/logs/ -e /home/snurk/logs/
