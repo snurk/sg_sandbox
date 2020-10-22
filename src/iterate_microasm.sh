@@ -172,7 +172,7 @@ for final_it in $(seq 1 $final_it_cnt) ; do
     rm uncompressed.gfa
 
     echo "Removing simple bulges ${final_it}"
-    $algo_root/simple_bulge_removal simplified.wip.gfa uncompressed.gfa 10000 3 10000 &> simple_br_${final_it}.log
+    $algo_root/simple_bulge_removal simplified.wip.gfa uncompressed.gfa -l 10000 -d 3 --min-alt-ovl 10000 &> simple_br_${final_it}.log
     echo "Compressing round $cnt"
     $scripts_root/compact_gfa.py uncompressed.gfa simplified.wip.gfa m${cnt}_ 2>> mapping.txt
     cnt=$((cnt+1))
