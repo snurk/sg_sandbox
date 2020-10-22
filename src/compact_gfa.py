@@ -7,7 +7,7 @@ if len(sys.argv) < 3:
   sys.exit(239)
 
 print("Loading graph")
-gfa = gfapy.Gfa.from_file(sys.argv[1], version = "gfa1")
+gfa = gfapy.Gfa.from_file(sys.argv[1], version = "gfa1", vlevel=0)
 print("Loaded")
 
 name_prefix = "m_"
