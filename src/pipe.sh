@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eou
 
 if [ "$#" -lt 2 ]; then
     echo "script.sh <canu bin> <canu assembly folder> [min_overlap = 2000] [max_erate = 0.001] [weak_overlaps...(default: disabled)]"
@@ -27,7 +27,7 @@ else
 fi
 
 if [ -z "$BUBBLE_DIFF" ]; then
-    echo "$BUBBLE_DIFF is unset using default 2Kb"
+    echo "BUBBLE_DIFF is unset using default 2Kb"
     BUBBLE_DIFF=2000
 else
     echo "BUBBLE_DIFF is set to $BUBBLE_DIFF"
@@ -89,7 +89,9 @@ else
         $scripts_root/build_graph.sh reads.compressed.fasta.gz ovl.paf $min_ovl
     fi
 
-    $scripts_root/iterate_microasm.sh processed.gfa $BUBBLE_DIFF ${@:5}
+    grep "^a" microasm.gfa > utg_reads.gfa
+    $scripts_root/iterate_microasm.sh processed.gfa utg_reads.gfa min_read.cov $BUBBLE_DIFF ${@:5}
+    rm -f utg_reads.gfa
 fi
 
 if [ ! -f microasm.gfa ]; then
