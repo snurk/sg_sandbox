@@ -39,7 +39,7 @@ rule microasm:
     shell:
         '''
         export BUBBLE_DIFF={BUBBLE_DIFF}
-        ~/git/ngs_scripts/gfakluge/pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} {params.weak_thrs} &> {log}
+        $SCRIPT_PATH/../pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} {params.weak_thrs} &> {log}
         '''
 
 rule mashmap:
