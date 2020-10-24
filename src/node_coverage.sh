@@ -1,5 +1,6 @@
 #!/bin/bash
-set -e
+set -eou
+:wa
 
 if [ "$#" -lt 2 ]; then
     echo "script.sh <subgraph gfa> <homopolymer-compressed reads> [threads=12]"

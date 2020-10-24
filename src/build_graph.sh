@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eou
 
 if [ "$#" -lt 2 ]; then
     echo "script.sh <reads.fasta> <ovl.paf> [min_overlap = 2000]"

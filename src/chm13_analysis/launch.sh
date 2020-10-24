@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eou
 
 if [ "$#" -lt 1 ]; then
     echo "script.sh <out_dir (with config.yaml)> [additional snakemake arguments]*"
