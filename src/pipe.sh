@@ -62,7 +62,7 @@ elif [ -f ../min_read.cov ]; then
 else
     echo "Getting read coverage estimates"
     $bin/ovStoreDump -S $assembly/asm.seqStore -O $ovlstore -coverage -erate 0-$max_erate | tail -n+4 | awk '{print $1,$2}' > min_read.wip.cov
-    sed '/^$/d' min_read.wip.cov > min_read.cov
+    sed '/^\s*$/d' min_read.wip.cov > min_read.cov
 fi
 
 if [ -f simplified.gfa ]; then
