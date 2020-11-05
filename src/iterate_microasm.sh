@@ -155,6 +155,9 @@ else
     echo "Iterative weak removal done"
 fi
 
+cp mapping.txt pre_final.mapping.txt
+cp simplified.wip.gfa pre_final.simplified.gfa
+
 final_it_cnt=3
 
 for final_it in $(seq 1 $final_it_cnt) ; do
@@ -193,6 +196,55 @@ for final_it in $(seq 1 $final_it_cnt) ; do
     $scripts_root/compact_gfa.py uncompressed.gfa simplified.wip.gfa m${cnt}_ 2>> mapping.txt
     cnt=$((cnt+1))
     rm uncompressed.gfa
+
+    #echo "Resolving layout"
+    #$scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
+    #echo "Assigning coverage"
+    #$scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov > simplified.wip.cov
+    #echo "Removing low frequency hets in unique areas"
+    #$algo_root/simple_bulge_removal simplified.wip.gfa uncompressed.gfa --coverage simplified.wip.cov \
+    #    --min-alt-ovl 10000 --max-unique-cov 30 --max-cov-ratio 0.33 -l 30000 -d 5000 &> low_freq_br_${final_it}.log
+    #echo "Compressing round $cnt"
+    #$scripts_root/compact_gfa.py uncompressed.gfa simplified.wip.gfa m${cnt}_ 2>> mapping.txt
+    #cnt=$((cnt+1))
+    #rm uncompressed.gfa
+
+    #echo "Resolving layout"
+    #$scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
+    #echo "Assigning coverage"
+    #$scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov > simplified.wip.cov
+    #echo "Removing other variants in unique areas"
+    #$algo_root/simple_bulge_removal simplified.wip.gfa uncompressed.gfa --coverage simplified.wip.cov \
+    #    --min-alt-ovl 10000 --max-unique-cov 35. -l 20000 -d 10000 --max-cov-ratio 1.5 --max-shortening 50 &> simple_unique_br_${final_it}.log
+    #echo "Compressing round $cnt"
+    #$scripts_root/compact_gfa.py uncompressed.gfa simplified.wip.gfa m${cnt}_ 2>> mapping.txt
+    #cnt=$((cnt+1))
+    #rm uncompressed.gfa
+
+    #echo "Resolving layout"
+    #$scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
+    #echo "Assigning coverage"
+    #$scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov > simplified.wip.cov
+    #echo "Removing two-sided nongenomic links"
+    #$algo_root/nongenomic_link_removal simplified.wip.gfa uncompressed.gfa --coverage simplified.wip.cov \
+    #    --unique-len 100000 --max-unique-cov 40. --reliable-cov 12. --reliable-len 20000 --both-sides &> two_sided_nongenomic_${final_it}.log
+    #echo "Compressing round $cnt"
+    #$scripts_root/compact_gfa.py uncompressed.gfa simplified.wip.gfa m${cnt}_ 2>> mapping.txt
+    #cnt=$((cnt+1))
+    #rm uncompressed.gfa
+
+    #echo "Resolving layout"
+    #$scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
+    #echo "Assigning coverage"
+    #$scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov > simplified.wip.cov
+    #echo "Removing one-sided nongenomic links"
+    #$algo_root/nongenomic_link_removal simplified.wip.gfa uncompressed.gfa --coverage simplified.wip.cov \
+    #    --unique-len 200000 --max-unique-cov 40. --reliable-cov 12. --reliable-len 50000 &> one_sided_nongenomic_${final_it}.log
+    #    #--unique-len 200000 --max-unique-cov 35. --reliable-cov 12. --reliable-len 50000 &> one_sided_nongenomic_${final_it}.log
+    #echo "Compressing round $cnt"
+    #$scripts_root/compact_gfa.py uncompressed.gfa simplified.wip.gfa m${cnt}_ 2>> mapping.txt
+    #cnt=$((cnt+1))
+    #rm uncompressed.gfa
 
     cp simplified.wip.gfa simplified.final_${final_it}.gfa
 
