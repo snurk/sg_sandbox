@@ -138,7 +138,7 @@ else
         #echo "Resolving layout"
         #$scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
         #echo "Assigning coverage"
-        $scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov > simplified.wip.cov
+        #$scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov > simplified.wip.cov
         #echo "Removing links between nodes of widely different coverage $weak_it"
         #$algo_root/unbalanced_removal simplified.wip.gfa uncompressed.gfa simplified.wip.cov 0.1 &> unbalanced${weak_it}.log
         #echo "Compressing round $cnt"
