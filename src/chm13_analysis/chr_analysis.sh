@@ -4,6 +4,7 @@ set -e
 module load bedtools
 
 #~/git/gfatools/gfatools view -S simplified.gfa > simplified.noseq.gfa
+root=$(dirname $(readlink -e $0))
 
 mkdir -p chr_analysis
 cd chr_analysis
@@ -34,8 +35,8 @@ for chr in $(awk {'print $1'} hg38.chronly.clr) ; do
     echo "Processing $chr"
     frac=$(grep "${chr}\s" frac.txt | awk '{print $7}' | grep -Po "\.\\d\\d" | sed 's/\.//g')
     grep "${chr}\s" good.nodes.out | awk '{print $1}' | sort | uniq > $chr.txt
-    #~/git/ngs_scripts/gfakluge/neighborhood ../simplified.gfa $chr.$frac.gfa $chr.txt 10000 &> $chr.log
-    ~/git/ngs_scripts/gfakluge/neighborhood ../simplified.noseq.gfa $chr.$frac.noseq.gfa $chr.txt 10000 &> $chr.noseq.log
+    #$root/../../gfacpp/build/neighborhood ../simplified.gfa $chr.$frac.gfa $chr.txt 10000 &> $chr.log
+    $root/../../gfacpp/build/neighborhood ../simplified.noseq.gfa $chr.$frac.noseq.gfa $chr.txt 10000 &> $chr.noseq.log
 done
 
 echo "Name,color,chr" > color.csv
