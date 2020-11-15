@@ -34,7 +34,7 @@ for chr in $(awk {'print $1'} hg38.chronly.clr) ; do
     echo "Processing $chr"
     frac=$(grep "${chr}\s" frac.txt | awk '{print $7}' | grep -Po "\.\\d\\d" | sed 's/\.//g')
     grep "${chr}\s" good.nodes.out | awk '{print $1}' | sort | uniq > $chr.txt
-    ~/git/ngs_scripts/gfakluge/neighborhood ../simplified.gfa $chr.$frac.gfa $chr.txt 10000 &> $chr.log
+    #~/git/ngs_scripts/gfakluge/neighborhood ../simplified.gfa $chr.$frac.gfa $chr.txt 10000 &> $chr.log
     ~/git/ngs_scripts/gfakluge/neighborhood ../simplified.noseq.gfa $chr.$frac.noseq.gfa $chr.txt 10000 &> $chr.noseq.log
 done
 
