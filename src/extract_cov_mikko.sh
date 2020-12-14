@@ -1,4 +1,4 @@
 #!/bin/bash
-set -eou
+#set -eou
 
-grep "^S" | awk '{print $2,$5}' | sed 's/ll:f://g' | sed 's/\.*//g'
+grep "^S" | sed 's/^S\s//g' | sed 's/\s.*ll:f:/ /g' | awk '{print $1,$2}'
