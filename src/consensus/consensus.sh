@@ -1,7 +1,7 @@
 #!/bin/bash
-set -e
+set -eou
 
-bin=~/git/canu2/Linux-amd64/bin
+bin=~/git/canu2/build/bin
 
 #seqstore=../../../assembly/asm.seqStore
 
@@ -10,7 +10,7 @@ seqstore=../../raw_seqstore_works/asm.seqStore
 ovlstore=../../assembly/unitigging/4-unitigger/asm.0.all.ovlStore
 
 if [ ! -f backbone_layout.txt ] ; then
-  ~/git/ngs_scripts/gfakluge/consensus/resolve_layouts.sh layout.txt ../resolved_mapping.txt
+  $(dirname $0)/resolve_layouts.sh layout.txt ../resolved_mapping.txt
 fi
 
 cnspre=./cns
