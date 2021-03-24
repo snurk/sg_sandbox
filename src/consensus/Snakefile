@@ -5,7 +5,7 @@ import glob
 import time
 import math
 
-BIN='~/git/canu2/Linux-amd64/bin'
+BIN='~/git/canu2/build/bin'
 SEQ_STORE='../../raw_seqstore_works/asm.seqStore'
 #ovlstore=../../assembly/unitigging/asm.ovlStore
 OVL_STORE='../../assembly/unitigging/4-unitigger/asm.0.all.ovlStore'
@@ -15,8 +15,8 @@ CNS_PRE='cns'
 
 rule all:
     input:
-        'v07.bam',
-        'joined.fasta',
+        #'v07.bam',
+        #'joined.fasta',
         'cns.renamed.info'
 
 rule joined:
@@ -48,7 +48,7 @@ rule backbone_layout:
             cp $manual backbone_layout.txt
             awk '{{print $1}}' backbone_layout.txt > contig_names.txt
         else
-            ~/git/ngs_scripts/gfakluge/consensus/resolve_layouts.sh {input.utg_layout} {input.utg_composition} &> {log}
+            $SCRIPT_PATH/resolve_layouts.sh {input.utg_layout} {input.utg_composition} &> {log}
         fi
         '''
 
@@ -96,7 +96,8 @@ rule consensus:
     threads: 8
     params:
         ovl_len=2000,
-        error_rate=0.08
+        #error_rate=0.08
+        error_rate=0.05
     shell:
       '{BIN}/utgcns -V -V -V \
         -R {CNS_PRE}.ctgStore/partition.{wildcards.part} \
@@ -129,7 +130,7 @@ rule rename:
         'cns.renamed.fasta'
     shell:
         '''
-        awk '{{print $0,NR}}' {input.names} > cns_name_map.txt
+        awk '{{print NR,$0}}' {input.names} > cns_name_map.txt
         ~/git/ngs_scripts/canu_gap_analysis/rename_reads.py {input.consensus} cns_name_map.txt {output}
         '''
 
@@ -145,7 +146,7 @@ v07_root='/data/PoreTenders/10x_v4CentromereXOnly/freebayes_serge/round2/splitBa
 
 rule relevant_ref_ctgs:
     input:
-        assign=v07_root + '/chm13_v06_chr_contig_assignments.txt',
+        assign=v07_root + '/chm13_v07_chr_contig_assignments.txt',
         ref=v07_root + '/new_contigs.fasta'
     output:
         'v07.relevant.fasta'
