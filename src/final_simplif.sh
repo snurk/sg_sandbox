@@ -15,7 +15,8 @@ bubble_diff=$5
 out_folder=$6
 
 scripts_root=$(dirname $(readlink -e $0))
-algo_root=~/git/gfacpp/build/
+algo_root=$scripts_root/../gfacpp/build
+#algo_root=~/git/gfacpp/build/
 
 mkdir -p $out_folder
 cd $out_folder
@@ -28,7 +29,7 @@ grep -v "^a" $gfa | grep -v "^x" > simplified.wip.gfa
 cp $utg_mapping mapping.txt
 
 #Compaction rounds counter
-cnt=100
+cnt=1
 
 #Added to fix invalid overlaps
 $algo_root/test simplified.wip.gfa simplified.wip.gfa --prefix f$((cnt++))_ --id-mapping mapping.txt &> normalize.log
