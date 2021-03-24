@@ -6,15 +6,20 @@ module load bedtools
 #~/git/gfatools/gfatools view -S simplified.gfa > simplified.noseq.gfa
 root=$(dirname $(readlink -e $0))
 
-mkdir -p chr_analysis
-cd chr_analysis
+out_dir=$1
+mashmap=$(readlink -e $2)
+gfa=$(readlink -e $3)
+gfa_noseq=$(readlink -e $4)
+
+mkdir -p $out_dir
+cd $out_dir
 
 ln -sf ~/data/gfa_works/hg38.chronly.clr
 ln -sf ~/data/gfa_works/hg38.chronly.compressed.bed
 
 # && $10 > 95.
 #Filter mappings
-awk '{if ($4 > 500000 + $3) print $0}' ../simplified.nodes.hg38.out | sort -k1,1 > filtered.out
+awk '{if ($4 > 500000 + $3) print $0}' $mashmap | sort -k1,1 > filtered.out
 
 #Find nodes associated with a single chromosome
 awk '{print $1,$6}' filtered.out | sort | uniq | awk '{print $1}' | sort -k1,1 | uniq -u > good.nodes.txt
@@ -35,8 +40,8 @@ for chr in $(awk {'print $1'} hg38.chronly.clr) ; do
     echo "Processing $chr"
     frac=$(grep "${chr}\s" frac.txt | awk '{print $7}' | grep -Po "\.\\d\\d" | sed 's/\.//g')
     grep "${chr}\s" good.nodes.out | awk '{print $1}' | sort | uniq > $chr.txt
-    #$root/../../gfacpp/build/neighborhood ../simplified.gfa $chr.$frac.gfa $chr.txt 10000 &> $chr.log
-    $root/../../gfacpp/build/neighborhood ../simplified.noseq.gfa $chr.$frac.noseq.gfa $chr.txt 10000 &> $chr.noseq.log
+    #$root/../../gfacpp/build/neighborhood $gfa $chr.$frac.gfa $chr.txt 10000 &> $chr.log
+    $root/../../gfacpp/build/neighborhood $gfa_noseq $chr.$frac.noseq.gfa $chr.txt 10000 &> $chr.noseq.log
 done
 
 echo "Name,color,chr" > color.csv

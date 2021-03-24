@@ -19,14 +19,19 @@ rule all:
         #'defensin/simplified.subgraph.quast/icarus.html',
         #'fragmented_region/simplified.subgraph.quast/icarus.html',
         #'all_bacs/simplified.subgraph.gfa',
-        'chr_analysis/finish.flag'
+        'simplified_chr_analysis/finish.flag',
+        'alt_final_simplif/simplified_chr_analysis/finish.flag'
 
 rule microasm:
     input:
         ASSEMBLY + '/unitigging/4-unitigger/asm.best.edges'
     output:
-        'simplified.noseq.gfa',
+        'pre_final.simplified.gfa',
+        'pre_final.mapping.txt',
+        'microasm.gfa',
+        'min_read.cov',
         'simplified.gfa',
+        'simplified.noseq.gfa',
         'simplified.nodes.fasta'
     threads:
         12
@@ -42,17 +47,37 @@ rule microasm:
         $SCRIPT_PATH/../pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} {params.weak_thrs} &> {log}
         '''
 
+rule alt_final_simp:
+    input:
+        'pre_final.simplified.gfa',
+        'pre_final.mapping.txt',
+        'microasm.gfa',
+        'min_read.cov',
+    output:
+        'alt_final_simplif/simplified.nodes.fasta',
+        'alt_final_simplif/simplified.gfa',
+        'alt_final_simplif/simplified.noseq.gfa',
+    threads:
+        12
+    log:
+        'alt_final_simplif.log'
+    shell:
+        '''
+        grep "^a" microasm.gfa > utg_reads.gfa
+        $SCRIPT_PATH/../new_final_simplif.sh pre_final.simplified.gfa pre_final.mapping.txt utg_reads.gfa min_read.cov {BUBBLE_DIFF} alt_final_simplif &> {log}
+        '''
+
 rule mashmap:
     input:
-        'simplified.nodes.fasta'
+        '{path}.nodes.fasta'
     output:
-        'simplified.nodes.hg38.out'
+        '{path}.nodes.hg38.out'
     threads:
         16
     log:
-        'mashmap.log'
+        '{path}.mashmap.log'
     shell:
-        '$SCRIPT_PATH/mashmap.sh {input} &> {log}'
+        '$SCRIPT_PATH/mashmap.sh {input} {output} &> {log}'
 
 rule bac_subgraphs:
     input:
@@ -96,10 +121,12 @@ rule icarus:
 
 rule chr_analysis:
     input:
-        'simplified.nodes.hg38.out'
+        mashmap='{path}.nodes.hg38.out',
+        gfa_noseq='{path}.noseq.gfa',
+        gfa='{path}.gfa'
     output:
-        touch('chr_analysis/finish.flag')
+        touch('{path}_chr_analysis/finish.flag')
     log:
-        'chr_analysis.log'
+        '{path}_chr_analysis.log'
     shell:
-        '$SCRIPT_PATH/chr_analysis.sh &> {log}'
+        '$SCRIPT_PATH/chr_analysis.sh {wildcards.path}_chr_analysis {input.mashmap} {input.gfa} {input.gfa_noseq} &> {log}'
