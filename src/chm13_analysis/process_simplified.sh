@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eou
 
 if [ "$#" -lt 4 ]; then
     echo "Usage: $(basename $0) <processed.gfa> <init.gfa> <node_composition.txt> <read_coverage.txt>"
