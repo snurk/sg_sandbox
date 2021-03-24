@@ -15,8 +15,8 @@ bubble_diff=$4
 scripts_root=$(dirname $(readlink -e $0))
 
 #TODO update repo and use local path
-#algo_root=$scripts_root/../gfacpp/build
-algo_root=~/git/gfacpp/build/
+algo_root=$scripts_root/../gfacpp/build
+#algo_root=~/git/gfacpp/build/
 
 echo "Processing graph $gfa"
 echo "Bubble diff length set to $bubble_diff"
