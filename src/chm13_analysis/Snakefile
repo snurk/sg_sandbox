@@ -64,7 +64,7 @@ rule alt_final_simp:
     shell:
         '''
         grep "^a" microasm.gfa > utg_reads.gfa
-        $SCRIPT_PATH/../new_final_simplif.sh pre_final.simplified.gfa pre_final.mapping.txt utg_reads.gfa min_read.cov {BUBBLE_DIFF} alt_final_simplif &> {log}
+        $SCRIPT_PATH/../final_simplif.sh pre_final.simplified.gfa pre_final.mapping.txt utg_reads.gfa min_read.cov {BUBBLE_DIFF} alt_final_simplif &> {log}
         '''
 
 rule mashmap:
