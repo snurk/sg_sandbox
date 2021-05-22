@@ -22,8 +22,8 @@ for g in simplified*000.gfa ; do
     echo -e "H\tVN:Z:1.0" > $d/simplified.noseq.gfa
     $scripts_root/../gfacpp/gfatools/gfatools view -S $d/simplified.gfa >> $d/simplified.noseq.gfa
 
-    cd $d
-    $scripts_root/chm13_analysis/mashmap.sh simplified.nodes.fasta &> mashmap.log
-    $scripts_root/chm13_analysis/chr_analysis.sh &> chr_analysis.log
-    cd -
+    #cd $d
+    #$scripts_root/chm13_analysis/mashmap.sh simplified.nodes.fasta &> mashmap.log
+    #$scripts_root/chm13_analysis/chr_analysis.sh &> chr_analysis.log
+    #cd -
 done
