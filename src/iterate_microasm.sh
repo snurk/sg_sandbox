@@ -43,6 +43,9 @@ max_lc_len=30000
 max_bubble_len=0
 max_isolated_len=20000
 
+#Overlap normalization step
+$algo_root/test simplified.wip.gfa simplified.wip.gfa --prefix m$((cnt++))_ --id-mapping mapping.txt &> normalize.log
+
 for read_cnt_bound in 1 2 3 ; do
 
     #FIXME crazy inefficient
