@@ -12,7 +12,7 @@ reads=$1
 g=$2
 unique=$3
 
-out=$(dirname $g)/$(basename $g)
+out=$(dirname $g)/$(basename $g .gfa)
 mkdir -p $out
 
 sbatch --ntasks 1 -W --mem 80G --cpus-per-task 24 --time 24:00:00 $base_path/ga_ont.sh $g $reads $out/ga_ont 24
