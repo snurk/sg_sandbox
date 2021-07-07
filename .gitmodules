@@ -4,3 +4,6 @@
 [submodule "gfacpp"]
 	path = gfacpp
 	url = git@github.com:snurk/gfacpp.git
+[submodule "tangle-resolution"]
+	path = tangle-resolution
+	url = git@github.com:snurk/tangle-resolution.git
