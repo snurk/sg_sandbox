@@ -5,7 +5,7 @@ set -e
 scripts_root=~/git/sg_sandbox/src
 
 #for g in simplified*000.gfa simplified.final_*.gfa ; do
-for g in simplified*000.gfa ; do
+for g in processed.gfa simplified*000.gfa pre_final.simplified.gfa ; do
     name=$(basename $g .gfa)
     d=$name
 
