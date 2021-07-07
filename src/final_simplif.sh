@@ -15,8 +15,8 @@ bubble_diff=$5
 out_folder=$6
 
 scripts_root=$(dirname $(readlink -e $0))
-#algo_root=$scripts_root/../gfacpp/build
-algo_root=~/git/gfacpp/build/
+algo_root=$scripts_root/../gfacpp/build
+#algo_root=~/git/gfacpp/build/
 
 mkdir -p $out_folder
 cd $out_folder
@@ -87,6 +87,7 @@ for final_it in $(seq 1 $final_it_cnt) ; do
         --min-alt-ovl 10000 --max-unique-cov $unique_cov_thr --max-cov-ratio 0.33 --max-length 10000 --max-diff 500 &> low_freq_br_${final_it}.log
         #--min-alt-ovl 10000 --max-unique-cov 30. --max-cov-ratio 0.33 --max-length 30000 --max-diff 5000 &> low_freq_br_${final_it}.log
 
+    #FIXME isn't it still quite risky?
     echo "Resolving layout"
     $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
     echo "Removing other variants in unique areas"
