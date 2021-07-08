@@ -17,7 +17,7 @@ mkdir -p $out
 
 sbatch --ntasks 1 -W --mem 80G --cpus-per-task 24 --time 24:00:00 $base_path/ga_ont.sh $g $reads $out/ga_ont 24
 
-awk ‘$1!=“S”{print;}$1==“S”{print “S\t” $2 “\t*\tLN:i:” length($3) “\t” $4 “\t” $5 “\t” $6 “\t” $7;}’ < $g > $out/noseq.gfa
+awk '$1!="S"{print;}$1=="S"{print "S\t" $2 "\t*\tLN:i:" length($3) "\t" $4 "\t" $5 "\t" $6 "\t" $7;}' < $g > $out/noseq.gfa
 
 #grep "^S" $out/noseq.gfa | sed 's/LN:i://g' | sed 's/RC:i://g' | awk '{print $2,$4,$5/$4}' > nodecovs.csv
 #awk '{if (($2 >= 20000 && $3 >= 15 && $3 <= 30) || ($2 >= 50000 && $3 >= 10 && $3 <= 35) || $2 >= 100000) print $1}' < nodecovs.csv > unique_nodes.txt
