@@ -31,7 +31,7 @@ unitig_layout_fn = sys.argv[2]
 read_2_unitig = dict()
 unitig_2_reads = dict()
 
-print("Reading unitig layout file", unitig_layout_fn)
+print("Reading unitig layout file", unitig_layout_fn, file=sys.stderr)
 with open(unitig_layout_fn, 'r') as f:
     for l in f:
         name, layout_str = l.split()
@@ -83,19 +83,19 @@ def analyze_concordance(contig_layout, i, unitig_layout):
     while i < n and j < m:
         #print("Trying to skip reads absent in unitigs")
         while i < n and (contig_layout[i][:-1] not in read_2_unitig):
-            print("Skipping contig-read %s absent in unitigs" % contig_layout[i][:-1])
+            print("Skipping contig-read %s absent in unitigs" % contig_layout[i][:-1], file=sys.stderr)
             i+=1
 
         if i == n:
-            print("WARNING: Wasn't able to locate 'suffix' contig-read(s) in unitigs")
+            print("WARNING: Wasn't able to locate 'suffix' contig-read(s) in unitigs", file=sys.stderr)
             break
 
         while j < m and contig_layout[i] != unitig_layout[j]:
-            print("Trying to skip unitig-read %s since it didn't match the contig" % unitig_layout[j])
+            print("Trying to skip unitig-read %s since it didn't match the contig" % unitig_layout[j], file=sys.stderr)
             j+=1
 
         if j == m:
-            print("PROBLEM: Last read of the unitig was skipped")
+            print("PROBLEM: Last read of the unitig was skipped", file=sys.stderr)
             return -1
 
         assert contig_layout[i] == unitig_layout[j]
@@ -111,12 +111,12 @@ def analyze_concordance(contig_layout, i, unitig_layout):
 
     #Came to the end of the contig, unitig goes forward
     if i == n:
-        print("Unitig goes past the end of the contig")
-        print("Extended by %d reads" % (m - j))
+        print("Unitig goes past the end of the contig", file=sys.stderr)
+        print("Extended by %d reads" % (m - j), file=sys.stderr)
         return i
 
-    print("Stopped at j=%d (m=%d)" %(j, m))
-    print("PROBLEM: %s in contig did not match %s in unitig" % (contig_layout[i], unitig_layout[j]))
+    print("Stopped at j=%d (m=%d)" %(j, m), file=sys.stderr)
+    print("PROBLEM: %s in contig did not match %s in unitig" % (contig_layout[i], unitig_layout[j]), file=sys.stderr)
     return -1
 
 def examine_layout(contig_layout):
@@ -134,29 +134,29 @@ def examine_layout(contig_layout):
 
         if utg == "":
             if unmatched_prefix:
-                print("WARNING: Wasn't able to locate 'prefix' contig-read %s in unitigs" % (r))
+                print("WARNING: Wasn't able to locate 'prefix' contig-read %s in unitigs" % (r), file=sys.stderr)
             else:
-                print("WARNING: Wasn't able to locate contig-read %s in unitigs considering it as start of 'suffix'" % (r))
+                print("WARNING: Wasn't able to locate contig-read %s in unitigs considering it as start of 'suffix'" % (r), file=sys.stderr)
                 unmatched_suffix = True
             i += 1
         else:
-            print("Next read %s was located within utg %s" % (r, utg))
+            print("Next read %s was located within utg %s" % (r, utg), file=sys.stderr)
             try:
                 if unmatched_suffix:
                     #reset flag
                     unmatched_suffix = False
                     #Something suddenly matched again
                     #print("Couldn't match some reads at the unitigs boundary")
-                    raise UnitigFollowFailure("Couldn't match some reads at the unitigs boundary")
+                    raise UnitigFollowFailure("Couldn't match some reads at the unitigs boundary", file=sys.stderr)
 
                 further_unitig_layout = following_unitig_layout(r)
                 utg_start = (len(further_unitig_layout) == len(unitig_2_reads[utg[:-1]]))
                 if not utg_start:
                     if unmatched_prefix:
-                        print("Unitig %s layout extends to the left of the contig" % utg)
-                        print("Extended by %d reads" % (len(unitig_2_reads[utg[:-1]]) - len(further_unitig_layout)))
+                        print("Unitig %s layout extends to the left of the contig" % utg, file=sys.stderr)
+                        print("Extended by %d reads" % (len(unitig_2_reads[utg[:-1]]) - len(further_unitig_layout)), file=sys.stderr)
                     else:
-                        print("PROBLEM: Discordant starting points")
+                        print("PROBLEM: Discordant starting points", file=sys.stderr)
                         #raise UnitigFollowFailure("Discordant starting points")
 
                 unmatched_prefix = False
@@ -165,14 +165,14 @@ def examine_layout(contig_layout):
                     #print("Discordant alignment, couldn't recover")
                     unmatched_prefix = True
                     assert containing_unitig(contig_layout[i]) == utg
-                    print("PROBLEM: Skipping beyond problematig unitig ", utg)
+                    print("PROBLEM: Skipping beyond problematig unitig ", utg, file=sys.stderr)
                     while i < n and (containing_unitig(contig_layout[i]) == "" or containing_unitig(contig_layout[i]) == utg):
                         i += 1
                     raise UnitigFollowFailure("Discordant alignment")
                 else:
                     i = i_jump
             except UnitigFollowFailure as utg_fail:
-                print("PROBLEM", utg_fail)
+                print("PROBLEM", utg_fail, file=sys.stderr)
                 all_good = False
                 layout_delim += "!!!"
 
@@ -189,10 +189,10 @@ with open(backbone_layout_fn, 'r') as f:
     for l in f:
         contig_name, contig_layout_str = l.split()
         contig_layout = contig_layout_str.split(',')
-        print("Examining layout of contig,", contig_name)
+        print("Examining layout of contig,", contig_name, file=sys.stderr)
         layout_str, all_good = examine_layout(contig_layout)
         if all_good:
-            print("Successfully uplifted the layout for contig", contig_name)
+            print("Successfully uplifted the layout for contig", contig_name, file=sys.stderr)
         else:
-            print("Couldn't uplift the layout for contig", contig_name)
-        print("UPLIFT: %s %s" % (contig_name, layout_str))
+            print("Couldn't uplift the layout for contig", contig_name, file=sys.stderr)
+        print("%s %s" % (contig_name, layout_str))
