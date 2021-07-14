@@ -7,3 +7,6 @@
 [submodule "tangle-resolution"]
 	path = tangle-resolution
 	url = git@github.com:snurk/tangle-resolution.git
+[submodule "canu"]
+	path = canu
+	url = git@github.com:marbl/canu.git
