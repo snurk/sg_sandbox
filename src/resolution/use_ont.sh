@@ -22,7 +22,7 @@ awk '$1!="S"{print;}$1=="S"{print "S\t" $2 "\t*\tLN:i:" length($3) "\t" $4 "\t" 
 #grep "^S" $out/noseq.gfa | sed 's/LN:i://g' | sed 's/RC:i://g' | awk '{print $2,$4,$5/$4}' > nodecovs.csv
 #awk '{if (($2 >= 20000 && $3 >= 15 && $3 <= 30) || ($2 >= 50000 && $3 >= 10 && $3 <= 35) || $2 >= 100000) print $1}' < nodecovs.csv > unique_nodes.txt
 
-sed 's/ <unknown description>//g' $out/ga_ont.gaf | awk '{print $1,($4-$3)/$2,$16,$6,$8,$9}' | sed 's/id:f://g' | awk '{if ($2 > 0.9 && $3 >= 0.9) print $1,$4,$5,$6}' > $out/ont_filtered.tsv
+sed 's/ <unknown description>//g' $out/ga_ont.gaf | awk -F "\t" '{split($1, name, " "); print name[1],($4-$3)/$2,$16,$6,$8,$9}' | sed 's/id:f://g' | awk  '{if ($2 > 0.9 && $3 >= 0.9) print $1,$4,$5,$6}' > $out/ont_filtered.tsv
 
 $base_path/post_process_gaf.py --trusted-overhang 5000 --gaf-paths $out/ont_filtered.tsv $out/noseq.gfa $out/ont_processed.tsv &> $out/ont_process.log
 
