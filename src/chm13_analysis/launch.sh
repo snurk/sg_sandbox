@@ -6,6 +6,7 @@ if [ "$#" -lt 1 ]; then
     exit
 fi
 
+module load snakemake
 dir=$(readlink -e $1)
 
 cd $(dirname $0)
