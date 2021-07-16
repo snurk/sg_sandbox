@@ -11,7 +11,7 @@ configfile: 'config.yaml'
 CANU_BIN=config['CANU_BIN']
 ASSEMBLY=config['ASSEMBLY']
 BUBBLE_DIFF=config.get('BUBBLE_DIFF', 2000)
-REFERENCE=config.get('REFERENCE_PATH', '$SCRIPT_PATH/../../resources/reference.compressed')
+REFERENCE=config.get('REFERENCE_PATH','$SCRIPT_PATH/../../resources/reference.compressed')
 
 localrules: all
 
@@ -78,7 +78,7 @@ rule mashmap:
     log:
         '{path}.mashmap.log'
     shell:
-        '$SCRIPT_PATH/mashmap.sh {input} $REFERENCE.fasta {output} &> {log}'
+        '$SCRIPT_PATH/mashmap.sh {input} {REFERENCE}.fasta {output} &> {log}'
 
 rule bac_subgraphs:
     input:
@@ -130,4 +130,4 @@ rule chr_analysis:
     log:
         '{path}_chr_analysis.log'
     shell:
-        '$SCRIPT_PATH/chr_analysis.sh {wildcards.path}_chr_analysis {input.mashmap} {input.gfa} {input.gfa_noseq} $REFERENCE.colors $REFERENCE.bed &> {log}'
+        '$SCRIPT_PATH/chr_analysis.sh {wildcards.path}_chr_analysis {input.mashmap} {input.gfa} {input.gfa_noseq} {REFERENCE}.colors {REFERENCE}.bed &> {log}'
