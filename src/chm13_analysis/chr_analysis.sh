@@ -11,7 +11,7 @@ mashmap=$(readlink -e $2)
 gfa=$(readlink -e $3)
 gfa_noseq=$(readlink -e $4)
 colors=$(readlink -e $5)
-chrinfo=$(readline -e $6)
+chrinfo=$(readlink -e $6)
 
 mkdir -p $out_dir
 cd $out_dir
@@ -43,7 +43,7 @@ for chr in $(awk {'print $1'} $colors) ; do
     frac=$(grep "${chr}\s" frac.txt | awk '{print $7}' | grep -Po "\.\\d\\d" | sed 's/\.//g')
     grep "${chr}\s" good.nodes.out | awk '{print $1}' | sort | uniq > $chr.txt
     #$root/../../gfacpp/build/neighborhood $gfa $chr.$frac.gfa $chr.txt 10000 &> $chr.log
-    $root/../../gfacpp/build/neighborhood $gfa_noseq $chr.$frac.noseq.gfa $chr.txt 10000 &> $chr.noseq.log
+    $root/../../gfacpp/build/neighborhood $gfa_noseq $chr.$frac.noseq.gfa -n $chr.txt -r 10000 &> $chr.noseq.log
 done
 
 echo "Name,color,chr" > color.csv
