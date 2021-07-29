@@ -8,7 +8,7 @@ cd consensus
 #Uncomment for consensus over all unitigs
 #ln -s ../resolved_mapping.txt backbone_layout.txt
 
-sbatch --ntasks 1 --mem 20G --cpus-per-task 10 --time 6:00:00  ~/git/ngs_scripts/gfakluge/consensus/consensus.sh
+sbatch --ntasks 1 --mem 20G --cpus-per-task 10 --time 6:00:00 ./consensus.sh ~/git/canu2/build/bin backbone_layout.txt ../../raw_seqstore_works/asm.seqStore ../../assembly/unitigging/4-unitigger/asm.0.all.ovlStore
 
 ####Combine contigs#########
 conda activate

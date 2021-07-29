@@ -1,21 +1,34 @@
 #!/bin/bash
 set -eou
 
-bin=~/git/canu2/build/bin
-
-#seqstore=../../../assembly/asm.seqStore
-
-seqstore=../../raw_seqstore_works/asm.seqStore
-#ovlstore=../../assembly/unitigging/asm.ovlStore
-ovlstore=../../assembly/unitigging/4-unitigger/asm.0.all.ovlStore
-
-if [ ! -f backbone_layout.txt ] ; then
-  $(dirname $0)/resolve_layouts.sh layout.txt ../resolved_mapping.txt
+if [ "$#" -lt 5 ]; then
+    echo "Usage: $0 <canu bin> <backbone layout> <seqstore> <ovlstore> <out folder>"
+    exit 1
 fi
+
+bin=$(readlink -e $1)
+backbone_layout=$(readlink -e $2)
+seqstore=$(readlink -e $3)
+ovlstore=$(readlink -e $4)
+
+mkdir -p $5
+cd $5
+
+#bin=~/git/canu2/build/bin
+#
+##seqstore=../../../assembly/asm.seqStore
+#
+#seqstore=../../raw_seqstore_works/asm.seqStore
+##ovlstore=../../assembly/unitigging/asm.ovlStore
+#ovlstore=../../assembly/unitigging/4-unitigger/asm.0.all.ovlStore
+#
+#if [ ! -f backbone_layout.txt ] ; then
+#  $(dirname $0)/resolve_layouts.sh layout.txt ../resolved_mapping.txt
+#fi
 
 cnspre=./cns
 
-$bin/layoutReads -S $seqstore -O $ovlstore -eg 0.00001 -eM 0.00001 -R backbone_layout.txt -seed 239 -gs 200000000 -o $cnspre &> layoutReads.log
+$bin/layoutReads -S $seqstore -O $ovlstore -eg 0.00001 -eM 0.00001 -R $backbone_layout -seed 239 -gs 200000000 -o $cnspre &> layoutReads.log
 
 #  Magic values
 #    partitionSize    - make partitions this big, relative to the biggest contig
@@ -52,6 +65,7 @@ for pp in $parts ; do
 
   echo "mv ${cnspre}-${pp}.cns.wip.fasta ${cnspre}-${pp}.cns.fasta" >> ./${cnspre}_launch.${pp}.sh
 
-  sbatch --ntasks 1 --mem 200G --cpus-per-task 10 --time 24:00:00 ./${cnspre}_launch.${pp}.sh
+  sbatch --ntasks 1 --mem 100G --cpus-per-task 10 --time 24:00:00 ./${cnspre}_launch.${pp}.sh
 done
 
+cd -
