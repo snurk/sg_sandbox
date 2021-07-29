@@ -1,38 +1,40 @@
 #!/bin/bash
 set -eou
 
-if [ "$#" -lt 4 ]; then
-    echo "Usage: $(basename $0) <simplified.gfa> <init.gfa> <node_composition.txt> <read_coverage.txt> [compact_prefix=m_]"
+if [ "$#" -lt 5 ]; then
+    echo "Usage: $(basename $0) <graph.gfa> <init.gfa> <node_composition.txt> <read_coverage.txt> <out_prefix> [compact_prefix=m_]"
     exit 1
 fi
 
-prefix="m_"
-if [ "$#" -gt 4 ]; then
-    prefix=$5
+comp_prefix="m_"
+if [ "$#" -gt 5 ]; then
+    comp_prefix=$6
 fi
 
 scripts_root=$(dirname $(readlink -e $0))/..
 
-simplified=$1
-name=$(basename $simplified .gfa)
+graph=$1
 init=$2
 resolved_mapping=$3
 read_cov=$4
+prefix=$5
 
-grep "^S" $simplified | cut -f 2 > $name.tmp
-echo -e "H\tVN:Z:1.0" > $name.fixed.gfa
-$scripts_root/../tangle-resolution/scripts/extract_subgraph.py $name.tmp < $init | grep "^S" | sed $'s/\tRC.*//g' >> $name.fixed.gfa
-#grep -f $name.tmp $init | sed $'s/\tRC.*//g' >> $name.fixed.gfa
-grep "^L" $simplified >> $name.fixed.gfa
-#rm -f $name.tmp
+mkdir -p $(dirname $prefix)
 
-$scripts_root/compact_gfa.py $name.fixed.gfa $name.tmp.gfa $prefix 2> $name.final_compress_mapping.txt
+$scripts_root/fix_node_info.sh $graph $init $prefix.fixed
 
-cat $resolved_mapping $name.final_compress_mapping.txt > $name.mapping.txt
-$scripts_root/resolve_layouts.py $name.tmp.gfa $name.mapping.txt > $name.resolved_mapping.txt
+$scripts_root/compact_gfa.py $prefix.fixed.gfa $prefix.tmp.gfa $comp_prefix 2> $prefix.final_compress_mapping.txt
 
-$scripts_root/assign_coverage.py $name.resolved_mapping.txt $read_cov > $name.recompressed.cov
-$scripts_root/inject_coverage.py $name.tmp.gfa $name.recompressed.cov > $name.recompressed.gfa
+cat $resolved_mapping $prefix.final_compress_mapping.txt > $prefix.mapping.txt
+$scripts_root/resolve_layouts.py $prefix.tmp.gfa $prefix.mapping.txt --resolved-marker _i > $prefix.resolved_mapping.txt
 
-echo -e "H\tVN:Z:1.0" > $name.recompressed.noseq.gfa
-$scripts_root/../gfacpp/gfatools/gfatools view -S $name.recompressed.gfa >> $name.recompressed.noseq.gfa
+$scripts_root/assign_coverage.py $prefix.resolved_mapping.txt $read_cov > $prefix.recompressed.cov
+$scripts_root/inject_coverage.py $prefix.tmp.gfa $prefix.recompressed.cov > $prefix.recompressed.gfa
+
+echo -e "H\tVN:Z:1.0" > $prefix.recompressed.noseq.gfa
+$scripts_root/../gfacpp/gfatools/gfatools view -S $prefix.recompressed.gfa >> $prefix.recompressed.noseq.gfa
+
+rm $prefix.tmp
+rm $prefix.tmp.gfa
+
+echo "Processing done"
