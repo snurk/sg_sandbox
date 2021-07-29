@@ -8,6 +8,7 @@ parser = argparse.ArgumentParser(description="Recursive resolution of the layout
 parser.add_argument("fragment_names", help="File with names of the fragments to resolve (or .gfa file -- segment names will be extracted)")
 parser.add_argument("composition", help="File specifying composition of intermediate fragments")
 parser.add_argument("--duplicate-shift", type=int, default=0, help="Ids shift to do if dealing with multiple occurences of the same fragment")
+parser.add_argument("--resolved-marker", help="String marking the nodes that got duplicated during repeat resolution (e.g. '_i'). Part of the name past the marker will be ignored.")
 parser.add_argument("--partial-resolve", action="store_true", help="Allow 'partial' resolving of layout. By default fails if can't resolve down to path of readXXX fragments")
 parser.add_argument("--miniasm", help="File with miniasm layout via 'a' lines")
 args = parser.parse_args()
@@ -91,6 +92,12 @@ def resolve(n_o, resolved, duplicate = False):
         return
 
     name = n_o[:-1]
+    if args.resolved_marker:
+        pos=name.find(args.resolved_marker)
+        assert pos != 0
+        if pos > 0:
+            name=name[:pos]
+
     assert args.partial_resolve or name in mapping
     if duplicate_shift > 0:
         assert usage[name] < 2
