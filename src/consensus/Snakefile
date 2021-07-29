@@ -29,7 +29,7 @@ rule joined:
     log:
         'join.log'
     shell:
-        '~/git/ngs_scripts/join_canu.py {input.utgs} {input.utg_layout} {input.gfa} {output} &> {log}'
+        '$SCRIPT_PATH/../join_segments.py {input.utgs} {input.utg_layout} {input.gfa} {output} &> {log}'
 
 rule backbone_layout:
     input:
@@ -131,7 +131,7 @@ rule rename:
     shell:
         '''
         awk '{{print NR,$0}}' {input.names} > cns_name_map.txt
-        ~/git/ngs_scripts/canu_gap_analysis/rename_reads.py {input.consensus} cns_name_map.txt {output}
+        $SCRIPT_PATH/../consensus/rename_reads.py {input.consensus} cns_name_map.txt {output}
         '''
 
 rule info:
@@ -140,7 +140,7 @@ rule info:
     output:
         'cns.renamed.info'
     shell:
-        '~/git/ngs_scripts/contig_processing/contig_info.py {input} {output}'
+        '$SCRIPT_PATH/../contig_processing/contig_info.py {input} {output}'
 
 v07_root='/data/PoreTenders/10x_v4CentromereXOnly/freebayes_serge/round2/splitBasedOnNCBI'
 
@@ -167,7 +167,7 @@ rule align_ref:
     threads: 6
     shell:
         '''
-        ~/git/ngs_scripts/gfakluge/contig_processing/align.sh {input.query} {input.ref} {output} 5 &> {log}
+        $SCRIPT_PATH/../contig_processing/align.sh {input.query} {input.ref} {output} 5 &> {log}
         '''
 
 #rule align_full_ref:
@@ -180,4 +180,4 @@ rule align_ref:
 #        'v07.full.align.log'
 #    threads: 6
 #    shell:
-#        '~/git/ngs_scripts/gfakluge/contig_processing/align.sh {input.query} {input.ref} {output} 5 &> {log}'
+#        '$SCRIPT_PATH/../contig_processing/align.sh {input.query} {input.ref} {output} 5 &> {log}'

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eou
 
 ####Launch consensus#########
 mkdir -p consensus
@@ -17,9 +17,9 @@ cat cns-*.cns.fasta > cns.result.fasta
 
 awk '{print $1,NR}' backbone_layout.txt > cns_name_map.txt
 
-~/git/ngs_scripts/canu_gap_analysis/rename_reads.py cns.result.fasta cns_name_map.txt cns.renamed.fasta
+../consensus/rename_reads.py cns.result.fasta cns_name_map.txt cns.renamed.fasta
 
-~/git/ngs_scripts/contig_processing/contig_info.py cns.renamed.fasta cns.renamed.info
+../contig_processing/contig_info.py cns.renamed.fasta cns.renamed.info
 
 ####Alignments for gap closing##########
 CHR=chr4
@@ -33,13 +33,13 @@ seqtk subseq $v07_root/new_contigs.fasta v07.relevant.txt > v07.relevant.fasta
 #module load minimap2
 #minimap2 -ax asm20 -H -t 16 cns.renamed.fasta > v07.sam
 
-sbatch --ntasks 1 --mem 20G --cpus-per-task 6 --time 4:00:00 ~/git/ngs_scripts/gfakluge/contig_processing/align.sh cns.renamed.fasta v07.relevant.fasta v07.bam 5
+sbatch --ntasks 1 --mem 20G --cpus-per-task 6 --time 4:00:00 ../contig_processing/align.sh cns.renamed.fasta v07.relevant.fasta v07.bam 5
 
 #sbatch --ntasks 1 --mem 20G --cpus-per-task 6 --time 4:00:00 ~/git/ngs_scripts/gfakluge/contig_processing/align.sh cns.renamed.fasta $v07_root/new_contigs.fasta v07.full.bam 5
 
-~/git/ngs_scripts/alignment_filter.py --min-len 4000 --min-idy 0.98 --use-all v07.bam 2> v07_align.cerr > v07_align.cout
+../alignment_filter.py --min-len 4000 --min-idy 0.98 --use-all v07.bam 2> v07_align.cerr > v07_align.cout
 
-~/git/ngs_scripts/gfakluge/contig_processing/gap_patch.sh $CHR cns.renamed.info v07_align.cout test_patch.bed
+../contig_processing/gap_patch.sh $CHR cns.renamed.info v07_align.cout test_patch.bed
 
 #/data/korens/devel/utils/bamparse/samToErrorRate v07.sam $CHR.v07.fasta 200 | awk '{if (match($1, "#")) { print $0; } else { if ($9 == 0) print $0; else print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t1\t"$12-$11"\t"$12-$10"\t"$12"\t"$13"\t"$14"\t"$15"\t"$16"\t"$17"\t"$18"\t"$19}}' | sort -nk10 > v07.paf
 #
