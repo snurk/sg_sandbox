@@ -46,10 +46,10 @@ rule backbone_layout:
         if [ -f $manual ] ; then
             echo "Copying from $manual" > {log}
             cp $manual backbone_layout.txt
-            awk '{{print $1}}' backbone_layout.txt > contig_names.txt
         else
-            $SCRIPT_PATH/resolve_layouts.sh {input.utg_layout} {input.utg_composition} &> {log}
+            $SCRIPT_PATH/resolve_layouts.sh {input.utg_layout} {input.utg_composition} backbone_layout.txt &> {log}
         fi
+        awk '{{print $1}}' backbone_layout.txt > contig_names.txt
         '''
 
 rule layout_reads:
