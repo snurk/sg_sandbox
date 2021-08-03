@@ -2,7 +2,7 @@
 set -eou
 
 if [ "$#" -lt 5 ]; then
-    echo "Usage: $0 <canu bin> <backbone layout> <seqstore> <ovlstore> <out folder>"
+    echo "Usage: $0 <canu bin> <backbone layout> <seqstore> <ovlstore> <out folder> [errorRate = 0.05]"
     exit 1
 fi
 
@@ -10,6 +10,11 @@ bin=$(readlink -e $1)
 backbone_layout=$(readlink -e $2)
 seqstore=$(readlink -e $3)
 ovlstore=$(readlink -e $4)
+
+errorRate=0.05
+if [ "$#" -gt 5 ]; then
+    errorRate=$6
+fi
 
 mkdir -p $5
 cd $5
@@ -23,7 +28,7 @@ cd $5
 #ovlstore=../../assembly/unitigging/4-unitigger/asm.0.all.ovlStore
 #
 #if [ ! -f backbone_layout.txt ] ; then
-#  $(dirname $0)/resolve_layouts.sh layout.txt ../resolved_mapping.txt
+#  $(dirname $0)/resolve_layouts.sh layout.txt ../resolved_mapping.txt backbone_layout.txt
 #fi
 
 cnspre=./cns
@@ -37,8 +42,6 @@ $bin/layoutReads -S $seqstore -O $ovlstore -eg 0.00001 -eM 0.00001 -R $backbone_
 #                       1.50 - 50% expansion of contig length, affects memory estimate
 #    partitionTigs    - put this many reads (as fraction of total) in a partition
 #                       0.01 - puts small contigs into many partitions
-
-errorRate=0.05
 
 if [ ! -e ${cnspre}.ctgStore/partitioning ] ; then
   $bin/utgcns -V \
