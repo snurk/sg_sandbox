@@ -99,7 +99,7 @@ def check_query_cov(r, query_length, ref_length):
 
     return False
 
-print("qname\tqlen\tqstart\tqend\treverse\trname\trlen\trstart\trend")
+print("qname\tqlen\tqstart\tqend\treverse\trname\trlen\trstart\trend\tidy")
 
 for r in alignment:
     if r.is_unmapped:
@@ -153,7 +153,7 @@ for r in alignment:
                 idy * 100., r.query_alignment_length, r.reference_length, r.is_reverse), \
             file=sys.stderr)
 
-    print("%s\t%d\t%d\t%d\t%r\t%s\t%d\t%d\t%d" % (r.query_name, init_length, query_alignment_start, query_alignment_end, r.is_reverse, alignment.get_reference_name(r.reference_id), alignment.lengths[r.reference_id], r.reference_start, r.reference_end))
+    print("%s\t%d\t%d\t%d\t%r\t%s\t%d\t%d\t%d\t%.3f" % (r.query_name, init_length, query_alignment_start, query_alignment_end, r.is_reverse, alignment.get_reference_name(r.reference_id), alignment.lengths[r.reference_id], r.reference_start, r.reference_end, idy * 100.))
 
     if args.filtered:
         out_alignment.write(r)
