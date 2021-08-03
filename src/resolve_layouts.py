@@ -112,10 +112,10 @@ def resolve(n_o, resolved, duplicate = False):
     usage[name] += 1
 
     if name not in mapping and args.partial_resolve:
-        resolved.append(n_o)
+        resolved.append(name + n_o[-1])
         return
 
-    parts = mapping[n_o[:-1]]
+    parts = mapping[name]
 
     if need_swap(n_o):
         for i in range(len(parts),0,-1):
