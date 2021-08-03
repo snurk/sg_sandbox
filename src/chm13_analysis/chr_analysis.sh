@@ -38,12 +38,14 @@ bedtools coverage -a $chrinfo -b good.nodes.bed | sort -k 7 -n -r > frac.txt
 #~/git/ngs_scripts/gfakluge/assign_coverage.py ../resolved_mapping.txt ../min_read.cov > simplified.cov
 
 rm -f chr*.txt chr*.log chr*.gfa
+$root/../extract_cov_micro.sh < $gfa_noseq > coverage.csv
+
 for chr in $(awk {'print $1'} $colors) ; do
     echo "Processing $chr"
     frac=$(grep "${chr}\s" frac.txt | awk '{print $7}' | grep -Po "\.\\d\\d" | sed 's/\.//g')
     grep "${chr}\s" good.nodes.out | awk '{print $1}' | sort | uniq > $chr.txt
     #$root/../../gfacpp/build/neighborhood $gfa $chr.$frac.gfa $chr.txt 10000 &> $chr.log
-    $root/../../gfacpp/build/neighborhood $gfa_noseq $chr.$frac.noseq.gfa -n $chr.txt -r 10000 &> $chr.noseq.log
+    $root/../../gfacpp/build/neighborhood $gfa_noseq $chr.$frac.noseq.gfa -n $chr.txt -r 10000 -c coverage.csv &> $chr.noseq.log
 done
 
 echo "Name,color,chr" > color.csv
