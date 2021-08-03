@@ -21,7 +21,7 @@ ln -sf $chrinfo
 
 # && $10 > 95.
 #Filter mappings
-awk '{if ($4 > 500000 + $3) print $0}' $mashmap | sort -k1,1 > filtered.out
+awk '{if ($4 >= 50000 + $3 && $NF >= 98) print $0}' $mashmap | sort -k1,1 > filtered.out
 
 #Find nodes associated with a single chromosome
 awk '{print $1,$6}' filtered.out | sort | uniq | awk '{print $1}' | sort -k1,1 | uniq -u > good.nodes.txt
