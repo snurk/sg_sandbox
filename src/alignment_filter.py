@@ -37,9 +37,9 @@ def insertion_cnt(cigartuples):
             total += cnt
     return total
 
-parser = argparse.ArgumentParser(description="Filter alignments based on various criteria")
-parser.add_argument("sam",
-        help="Input SAM/BAM alignment file")
+parser = argparse.ArgumentParser(description="Filter alignments in SAM based on various criteria")
+parser.add_argument("sam", nargs='?', help="Input SAM/BAM alignment file (by default reading SAM from stdin)")
+#parser.add_argument("--input", help="Input SAM/BAM alignment file (by default reading SAM from stdin)")
 parser.add_argument("--min-len", type=int, default=0, help="Minimal length of alignment (default 0)")
 parser.add_argument("--query-frac", type=float, default=0., help="Minimal fraction of the query sequence covered (default 0.)")
 parser.add_argument("--min-idy", type=float, default=0., help="Minimal alignment identity defined as 1. - (edit_distance / alignment_matrix_length) (default 0.)")
@@ -52,8 +52,11 @@ parser.add_argument("--bed-trim", type=int, default=0, help="Cut this many bp fr
 parser.add_argument("--overhang-margin", type=int, default=-1, help="Margin for over-hang reads, negative to disable over-hangs (default: -1)")
 args = parser.parse_args()
 
-print("Filtering alignments from", args.sam, file=sys.stderr)
-alignment = AlignmentFile(args.sam, 'r' + guess_sam_bam(args.sam), check_sq=False)
+if args.sam:
+    print("Filtering alignments from", args.sam, file=sys.stderr)
+    alignment = AlignmentFile(args.sam, 'r' + guess_sam_bam(args.sam), check_sq=False)
+else:
+    alignment = AlignmentFile(sys.stdin, 'r', check_sq=False)
 
 if args.query_frac > 1.:
     print("Minimal covered fraction of the query sequence can not exceed 1. Specified", args.query_frac, file=sys.stderr)
