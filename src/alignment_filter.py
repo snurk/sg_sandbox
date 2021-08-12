@@ -47,6 +47,7 @@ parser.add_argument("--use-secondary", action="store_true", help="Minimal alignm
 parser.add_argument("--use-supplementary", action="store_true")
 parser.add_argument("--use-all", action="store_true")
 parser.add_argument("--filtered", help="Output SAM/BAM file")
+parser.add_argument("--targets", help="Comma separated list of alignment targets to keep (e.g. 'chrX,chrY')")
 parser.add_argument("--bed", help="Output bed file")
 parser.add_argument("--bed-trim", type=int, default=0, help="Cut this many bp from each side of the covered region")
 parser.add_argument("--overhang-margin", type=int, default=-1, help="Margin for over-hang reads, negative to disable over-hangs (default: -1)")
@@ -104,6 +105,11 @@ def check_query_cov(r, query_length, ref_length):
 
 print("qname\tqlen\tqstart\tqend\treverse\trname\trlen\trstart\trend\tidy")
 
+if args.targets:
+    targets=set(args.targets.strip().split(','))
+else:
+    targets=set()
+
 for r in alignment:
     if r.is_unmapped:
         continue
@@ -131,6 +137,10 @@ for r in alignment:
 
     if idy < min_idy:
         continue
+
+    if args.targets:
+        if alignment.get_reference_name(r.reference_id) not in targets:
+            continue
 
     init_length = r.infer_read_length()
     if not check_query_cov(r, init_length, alignment.lengths[r.reference_id]):
