@@ -5,7 +5,7 @@ from collections import defaultdict
 import argparse
 
 parser = argparse.ArgumentParser(description="Recursive resolution of the layouts")
-parser.add_argument("fragment_names", help="File with names of the fragments to resolve (or .gfa file -- segment names will be extracted)")
+parser.add_argument("fragment_names", help="File with names of the fragments to resolve OR layout file OR .gfa file -- segment names will be extracted")
 parser.add_argument("composition", help="File specifying composition of intermediate fragments")
 parser.add_argument("--duplicate-shift", type=int, default=0, help="Ids shift to do if dealing with multiple occurences of the same fragment")
 parser.add_argument("--resolved-marker", help="String marking the nodes that got duplicated during repeat resolution (e.g. '_i'). Part of the name past the marker will be ignored.")
@@ -57,10 +57,14 @@ if args.fragment_names.endswith('.gfa'):
             names.append(s[1])
     print("Loaded", file=sys.stderr)
 else:
-    print("Loading fragment names from text file", file=sys.stderr)
-    with open(args.fragment_names, 'r') as names_handle:
-        for l in names_handle:
-            names.append(l.strip())
+    print("Loading fragment info from text file", file=sys.stderr)
+    with open(args.fragment_names, 'r') as fragment_handle:
+        for l in fragment_handle:
+            s = l.strip().split()
+            names.append(s[0].strip())
+            if len(s) > 1:
+                mapping[s[0]] = s[1].split(',')
+
     print("Loaded", file=sys.stderr)
 
 def opposite_sign(o):
@@ -97,6 +101,9 @@ def resolve(n_o, resolved, duplicate = False):
         assert pos != 0
         if pos > 0:
             name=name[:pos]
+
+    if not args.partial_resolve and name not in mapping:
+        print("Problem with ", name, file=sys.stderr)
 
     assert args.partial_resolve or name in mapping
     if duplicate_shift > 0:
