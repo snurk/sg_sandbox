@@ -1,8 +1,8 @@
 #!/bin/bash
 set -eou
 
-if [ "$#" -lt 3 ]; then
-    echo "Usage: $0 <ONT reads> <graph in gfa> <file with names of single-copy unitigs>"
+if [ "$#" -lt 4 ]; then
+    echo "Usage: $0 <ONT reads> <graph in gfa> <file with names of single-copy unitigs> <out folder>"
     exit 1
 fi
 
@@ -11,14 +11,16 @@ base_path=$(dirname $(readlink -e $0))
 reads=$1
 g=$2
 unique=$3
+out=$4
 
-out=$(dirname $g)/$(basename $g .gfa)
 mkdir -p $out
 
 if [ ! -f $out/ga_ont.gaf ] ; then
-    sbatch --ntasks 1 -W --mem 80G --cpus-per-task 40 --time 24:00:00 $base_path/ga_ont.sh $g $reads $out/ga_ont 24
+    echo "Aligning reads with GraphAligner"
+    sbatch --ntasks 1 -W --mem 80G --cpus-per-task 24 --time 24:00:00 $base_path/ga_ont.sh $g $reads $out/ga_ont 24
 fi
 
+echo "Proceeding with resolution"
 awk '$1!="S"{print;}$1=="S"{print "S\t" $2 "\t*\tLN:i:" length($3) "\t" $4 "\t" $5 "\t" $6 "\t" $7;}' < $g > $out/noseq.gfa
 
 #grep "^S" $out/noseq.gfa | sed 's/LN:i://g' | sed 's/RC:i://g' | awk '{print $2,$4,$5/$4}' > nodecovs.csv
