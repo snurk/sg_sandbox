@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eou
 
 module load mashmap
 

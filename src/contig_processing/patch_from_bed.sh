@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eou
 
 if [ "$#" -lt 3 ]; then
     echo "script.sh <fragments.fasta> <patch.bed> <prefix>"
