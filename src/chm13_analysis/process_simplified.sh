@@ -1,40 +1,46 @@
 #!/bin/bash
 set -eou
 
-if [ "$#" -lt 5 ]; then
-    echo "Usage: $(basename $0) <graph.gfa> <init.gfa> <node_composition.txt> <read_coverage.txt> <out_prefix> [compact_prefix=m_]"
+if [ "$#" -lt 3 ]; then
+    echo "Usage: $(basename $0) <graph.gfa> <node_composition.txt> <out_prefix> [compact_prefix=m_] [read_coverage.txt]"
     exit 1
 fi
 
 comp_prefix="m_"
-if [ "$#" -gt 5 ]; then
-    comp_prefix=$6
+if [ "$#" -gt 3 ]; then
+    comp_prefix=$4
 fi
 
 scripts_root=$(dirname $(readlink -e $0))/..
 
 graph=$1
-init=$2
-resolved_mapping=$3
-read_cov=$4
-prefix=$5
+resolved_mapping=$2
+prefix=$3
 
 mkdir -p $(dirname $prefix)
 
-$scripts_root/fix_node_info.sh $graph $init $prefix.fixed
-
-$scripts_root/compact_gfa.py $prefix.fixed.gfa $prefix.tmp.gfa $comp_prefix 2> $prefix.final_compress_mapping.txt
+$scripts_root/compact_gfa.py <(sed 's/\tCL.*//g' $graph) $prefix.tmp.gfa $comp_prefix 2> $prefix.final_compress_mapping.txt
 
 cat $resolved_mapping $prefix.final_compress_mapping.txt > $prefix.mapping.txt
+
+#Trick to ignore bait nodes
+#grep -v f_ $prefix.tmp.gfa > $prefix.tmp2.gfa
+#$scripts_root/resolve_layouts.py $prefix.tmp2.gfa $prefix.mapping.txt --resolved-marker _i > $prefix.resolved_mapping.txt
 $scripts_root/resolve_layouts.py $prefix.tmp.gfa $prefix.mapping.txt --resolved-marker _i > $prefix.resolved_mapping.txt
 
-$scripts_root/assign_coverage.py $prefix.resolved_mapping.txt $read_cov > $prefix.recompressed.cov
-$scripts_root/inject_coverage.py $prefix.recompressed.cov $prefix.tmp.gfa > $prefix.recompressed.gfa
+if [ "$#" -gt 4 ]; then
+    read_cov=$5
+    $scripts_root/assign_coverage.py $prefix.resolved_mapping.txt $read_cov > $prefix.cov
+    #Trick to ignore bait nodes
+    #$scripts_root/inject_coverage.py --allow-absent $prefix.cov $prefix.tmp.gfa > $prefix.gfa
+    $scripts_root/inject_coverage.py $prefix.cov $prefix.tmp.gfa > $prefix.gfa
+else
+    cp $prefix.tmp.gfa $prefix.gfa
+fi
 
-echo -e "H\tVN:Z:1.0" > $prefix.recompressed.noseq.gfa
-$scripts_root/../gfacpp/gfatools/gfatools view -S $prefix.recompressed.gfa >> $prefix.recompressed.noseq.gfa
+echo -e "H\tVN:Z:1.0" > $prefix.noseq.gfa
+$scripts_root/../gfacpp/gfatools/gfatools view -S $prefix.gfa >> $prefix.noseq.gfa
 
-rm $prefix.tmp
-rm $prefix.tmp.gfa
+rm -f $prefix.tmp*
 
 echo "Processing done"
