@@ -29,7 +29,7 @@ cat $resolved_mapping $prefix.final_compress_mapping.txt > $prefix.mapping.txt
 $scripts_root/resolve_layouts.py $prefix.tmp.gfa $prefix.mapping.txt --resolved-marker _i > $prefix.resolved_mapping.txt
 
 $scripts_root/assign_coverage.py $prefix.resolved_mapping.txt $read_cov > $prefix.recompressed.cov
-$scripts_root/inject_coverage.py $prefix.tmp.gfa $prefix.recompressed.cov > $prefix.recompressed.gfa
+$scripts_root/inject_coverage.py $prefix.recompressed.cov $prefix.tmp.gfa > $prefix.recompressed.gfa
 
 echo -e "H\tVN:Z:1.0" > $prefix.recompressed.noseq.gfa
 $scripts_root/../gfacpp/gfatools/gfatools view -S $prefix.recompressed.gfa >> $prefix.recompressed.noseq.gfa

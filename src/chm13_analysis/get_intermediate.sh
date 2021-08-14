@@ -15,7 +15,7 @@ for g in processed.gfa simplified*000.gfa pre_final.simplified.gfa ; do
 
     $scripts_root/assign_coverage.py $d/resolved_mapping.txt min_read.cov > $d/simplified.cov
 
-    $scripts_root/inject_coverage.py $g $d/simplified.cov > $d/simplified.gfa
+    $scripts_root/inject_coverage.py $d/simplified.cov $g > $d/simplified.gfa
 
     awk '/^S/{print ">"$2"\n"$3}' $d/simplified.gfa | fold > $d/simplified.nodes.fasta
 

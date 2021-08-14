@@ -1,7 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+from __future__ import print_function
+from __future__ import division
 
 import sys
 import re
+import argparse
 from statistics import median_low
 
 def segment_length(split_line):
@@ -13,32 +16,36 @@ def segment_length(split_line):
                 return int(s.split(":")[2])
         assert(False)
 
-if len(sys.argv) < 3 or len(sys.argv) > 3 and sys.argv[3] != '--allow-absent':
-    print("Usage: %s <gfa> <segment coverage> [--allow-absent]" % sys.argv[0], file=sys.stderr)
-    sys.exit(1)
-
-allow_absent = False
-gfa_fn = sys.argv[1]
-segment_cov_fn = sys.argv[2]
-
-if len(sys.argv) > 3:
-    allow_absent = True
+parser = argparse.ArgumentParser(description="Integrate node sequences into GFA")
+parser.add_argument("coverage", help="File with average segment coverage values")
+parser.add_argument("gfa", nargs='?', help="GFA file specifying graph structure (by default reading from stdin)")
+parser.add_argument("--allow-absent", action="store_true")
+args = parser.parse_args()
 
 seg_cov=dict()
-with open(segment_cov_fn, 'r') as f:
+with open(args.coverage, 'r') as f:
     for l in f:
         s = l.split()
         seg_cov[s[0]] = float(s[1])
 
-with open(gfa_fn, 'r') as f:
-    for l in f:
-        if l.startswith('S\t'):
-            s = l.split()
-            seg = s[1]
-            s = [item for item in s if not re.match("^(RC:i:|FC:i:|ll:f:).*", item)]
-            length = segment_length(s)
-            assert seg in seg_cov or allow_absent
-            cov = seg_cov[seg] if seg in seg_cov else 0.
-            print('%s\tRC:i:%d' % ('\t'.join(s), int(length * cov)))
-        else:
-            print(l.strip())
+if args.gfa:
+    print("Reading graph from", args.gfa, file=sys.stderr)
+    stream = open(args.gfa, 'r')
+else:
+    print("Reading graph from stdin", file=sys.stderr)
+    stream = sys.stdin
+
+for l in stream:
+    if l.startswith('S\t'):
+        s = l.split()
+        seg = s[1]
+        s = [item for item in s if not re.match("^(RC:i:|FC:i:|ll:f:).*", item)]
+        length = segment_length(s)
+        assert seg in seg_cov or args.allow_absent
+        cov = seg_cov[seg] if seg in seg_cov else 0.
+        print('%s\tRC:i:%d' % ('\t'.join(s), int(length * cov)))
+    else:
+        print(l.strip())
+
+if args.gfa:
+    stream.close()

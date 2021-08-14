@@ -111,7 +111,7 @@ $scripts_root/resolve_layouts.py simplified.gfa mapping.txt --miniasm microasm.g
 $scripts_root/assign_coverage.py resolved_mapping.txt min_read.cov > simplified.cov
 
 mv simplified.gfa no_cov.gfa
-$scripts_root/inject_coverage.py no_cov.gfa simplified.cov > simplified.gfa
+$scripts_root/inject_coverage.py simplified.cov < no_cov.gfa > simplified.gfa
 rm no_cov.gfa
 
 echo -e "H\tVN:Z:1.0" > simplified.noseq.gfa
