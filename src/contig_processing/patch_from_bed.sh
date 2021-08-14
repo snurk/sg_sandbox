@@ -1,15 +1,16 @@
 #!/bin/bash
 set -e
 
-if [ "$#" -lt 1 ]; then
-    echo "script.sh <chromosome name>"
-    echo "telomere_patch.bed files should be in the folder"
+if [ "$#" -lt 3 ]; then
+    echo "script.sh <fragments.fasta> <patch.bed> <out_name>"
     exit 239
 fi
 
-chr=$1
+name=$3
 
-echo ">$chr" > noformat.fasta
-bedtools getfasta -s -fi ../for_patch.fasta -bed telomere_patch.bed | grep -v ">" >> noformat.fasta
+echo ">$name" > tmp.fasta
+bedtools getfasta -s -fi $1 -bed $2 | grep -v ">" >> tmp.fasta
 
-~/git/ngs_scripts/contig_processing/contig_length_filter.py 1 noformat.fasta $chr.fasta
+$(dirname $(readlink -e $0))/contig_length_filter.py 1 tmp.fasta $name.fasta
+
+rm -f tmp.fasta

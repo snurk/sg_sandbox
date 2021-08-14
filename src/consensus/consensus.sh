@@ -64,11 +64,13 @@ for pp in $parts ; do
     -A ${cnspre}-${pp}.cns.wip.fasta \
     -maxcoverage 50 \
     -e ${errorRate} \
-    -threads 8 "&>" ${cnspre}-${pp}.cns.log >> ./${cnspre}_launch.${pp}.sh
+    -threads 4 "&>" ${cnspre}-${pp}.cns.log >> ./${cnspre}_launch.${pp}.sh
+    #-threads 8 "&>" ${cnspre}-${pp}.cns.log >> ./${cnspre}_launch.${pp}.sh
 
   echo "mv ${cnspre}-${pp}.cns.wip.fasta ${cnspre}-${pp}.cns.fasta" >> ./${cnspre}_launch.${pp}.sh
 
-  sbatch --ntasks 1 --mem 100G --cpus-per-task 10 --time 24:00:00 ./${cnspre}_launch.${pp}.sh
+  #sbatch --ntasks 1 --mem 100G --cpus-per-task 10 --time 24:00:00 ./${cnspre}_launch.${pp}.sh
+  sbatch --ntasks 1 --mem 10G --cpus-per-task 4 --time 4:00:00 ./${cnspre}_launch.${pp}.sh
 done
 
 cd -

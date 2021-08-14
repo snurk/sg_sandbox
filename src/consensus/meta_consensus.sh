@@ -9,7 +9,7 @@ seqstore=../../assembly/asm.seqStore
 ovlstore=../../assembly/unitigging/asm.ovlStore
 
 #if [ ! -f backbone_layout.txt ] ; then
-#  ~/git/ngs_scripts/gfakluge/consensus/resolve_layouts.sh layout.txt ../../8k_upd/resolved_mapping.txt
+#  ~/git/ngs_scripts/gfakluge/consensus/resolve_layouts.sh layout.txt ../../8k_upd/resolved_mapping.txt backbone_layout.txt
 #fi
 
 cnspre=./cns

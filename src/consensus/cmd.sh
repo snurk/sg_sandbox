@@ -46,3 +46,5 @@ sbatch --ntasks 1 --mem 20G --cpus-per-task 6 --time 4:00:00 ../contig_processin
 #awk '{print "Alignment of query",$1,"( length",$8,") : [",$6,"-",$7,"], orientation:",$9,"to",$2,"( length",$12,") : [",$10,"-",$11,"]. Identity --",$4}' v07.paf > v07.paf.readable
 
 #grep "^chr19.3" $CHR.paf | awk '{print "Alignment of query",$1,"( length",$8,") : [",$6,"-",$7,"], orientation:",$9,"to",$2,"( length",$12,") : [",$10,"-",$11,"]. Identity --",$4}' | grep Super-Scaffold_466_0
+
+cat split_layouts.txt | xargs -n 2 bash -c 'mkdir -p $0; echo "$0 $1" > $0/layout.txt'

@@ -8,7 +8,7 @@ import math
 BIN='~/git/canu2/build/bin'
 SEQ_STORE='../../raw_seqstore_works/asm.seqStore'
 #ovlstore=../../assembly/unitigging/asm.ovlStore
-OVL_STORE='../../assembly/unitigging/4-unitigger/asm.0.all.ovlStore'
+OVL_STORE='../../full_assembly/unitigging/4-unitigger/asm.0.all.ovlStore'
 
 CNS_PRE='cns'
 #seqstore=../../../assembly/asm.seqStore
