@@ -67,6 +67,8 @@ def make_sequence(cigars, contig_dict, segment_order, trim_flanks_to):
     for i in range(0, len(segments)-1):
         cigar = get_cigar(cigars, segment_descs[i], segment_descs[i+1])
         print(segment_descs[i], segment_descs[i+1])
+        if (cigar is None):
+           print("Cigar not known between %s and %s\n"%(segment_descs[i], segment_descs[i+1]))
         assert cigar is not None
         print('================== Basic step')
         print(segment_descs[i], segment_descs[i+1], cigar)
