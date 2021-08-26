@@ -14,7 +14,7 @@ def read_map(fn):
     return d
 
 if len(sys.argv) < 2:
-    print("Usage: %s <name map (from -> to) file>.\nReads layout from standard input and prints converted layout to standard output." % sys.argv[0])
+    print("Usage: %s <name map (from -> to) file>.\nReads layout from standard input and prints converted layout to standard output." % sys.argv[0], file=sys.stderr)
     sys.exit(1)
 
 mapping = read_map(sys.argv[1])
