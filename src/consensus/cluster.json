@@ -2,7 +2,7 @@
     "__default__": {
         "time": "04:00:00",
         "n": 4,
-        "mem": 10
+        "mem": 4
     },
     "layout_reads": {
         "time" : "08:00:00",
@@ -12,7 +12,7 @@
     "consensus": {
         "time" : "24:00:00",
         "n": 8,
-        "mem": 200
+        "mem": 100
     },
     "align_ref": {
         "time" : "4:00:00",
