@@ -79,6 +79,8 @@ def analyze_concordance(contig_layout, i, unitig_layout):
     assert m > 0
     assert contig_layout[i] == unitig_layout[j]
 
+    MAX_SKIP = 2
+
     #TODO use Smith-Waterman?
     while i < n and j < m:
         #print("Trying to skip reads absent in unitigs")
@@ -90,13 +92,17 @@ def analyze_concordance(contig_layout, i, unitig_layout):
             print("WARNING: Wasn't able to locate 'suffix' contig-read(s) in unitigs", file=sys.stderr)
             break
 
+        skipped = 0
         while j < m and contig_layout[i] != unitig_layout[j]:
             print("Trying to skip unitig-read %s since it didn't match the contig" % unitig_layout[j], file=sys.stderr)
             j+=1
+            skipped += 1
 
         if j == m:
-            print("PROBLEM: Last read of the unitig was skipped", file=sys.stderr)
-            return -1
+            print("WARNING: Last read of the unitig was skipped", file=sys.stderr)
+            #print("HERE: Current 'contig' read is ", contig_layout[i], file=sys.stderr)
+            #return -1
+            return -1 if skipped > MAX_SKIP else i
 
         assert contig_layout[i] == unitig_layout[j]
 
