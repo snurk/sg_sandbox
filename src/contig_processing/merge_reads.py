@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sys
-import gzip
 from Bio import SeqIO
 
 # the patch file is expected to be 0-based and not including on the last one ala BED
