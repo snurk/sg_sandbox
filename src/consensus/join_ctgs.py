@@ -103,7 +103,10 @@ def overlap_and_join(s1, s2):
         pos, score = parasail_ends(str(s1[-f1:]), str(s2[:f2]))
 
     assert score > 0
-    assert pos > 4000
+    if pos < args.min_ovl:
+        print('Overlap', pos, 'was smaller than threshold', args.min_ovl, file=sys.stderr)
+        assert False
+
     print('Overlap', pos, file=sys.stderr)
     print('Score', score, file=sys.stderr)
 
