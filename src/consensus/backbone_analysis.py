@@ -32,7 +32,8 @@ parser = argparse.ArgumentParser(description="Join sequences of GFA nodes")
 parser.add_argument("paths", help="Part of GAF detailing paths (name id1[+-],id2[+-],...)")
 parser.add_argument("coverage", help="Node coverage file")
 parser.add_argument("composition", help="Node composition stats")
-#parser.add_argument("result", help="Output file")
+parser.add_argument("--excess-coeff", type=float, default=1., help="Do not split at nodes with >= (node-multiplicity * excess-coeff) reads available (default 1.)")
+parser.add_argument("--min-cov", type=float, default=15., help="Minimal single-copy node coverage (default 15.)")
 args = parser.parse_args()
 
 seg_cov=dict()
@@ -57,32 +58,27 @@ def match_length(a, i, j):
     return k
 
 def reuse_stats(segment_descs):
-    #FIXME Parameterize!
-    #READ_EXCESS_COEFF = 2
-    READ_EXCESS_COEFF = 1
-    EXPECTED_COV = 15.
-
     reused = list()
     seg_mults = defaultdict(int)
     with_orientation = set()
     for s in segment_descs:
-        assert s[:-1] in seg_cov
-        assert s[:-1] in seg_comp
-        if s[:-1] in seg_mults:
+        s_n = s[:-1]
+        assert s_n in seg_cov
+        assert s_n in seg_comp
+        if s_n in seg_mults:
             if not s in with_orientation:
-                print("Trouble segment %s in the path in different orientations" % s[:-1], file=sys.stderr)
+                print("Trouble segment %s in the path in different orientations" % s_n, file=sys.stderr)
         #        assert False
 
-        seg_mults[s[:-1]] += 1
+        seg_mults[s_n] += 1
         with_orientation.add(s)
 
     for b in seg_mults:
         if seg_mults[b] > 1:
-            if seg_cov[b] < EXPECTED_COV * seg_mults[b]:
+            if seg_cov[b] < args.min_cov * seg_mults[b]:
                 print("WARN: Node %s (cov: %f, #reads: %d) used %d times" % (b, seg_cov[b], seg_comp[b], seg_mults[b]), file=sys.stderr)
 
-            #if seg_mults[b] > seg_comp[b] or (seg_mults[b] > 2 and (READ_EXCESS_COEFF * seg_mults[b]) > seg_comp[b]):
-            if seg_comp[b] < READ_EXCESS_COEFF * seg_mults[b]:
+            if seg_comp[b] < args.excess_coeff * seg_mults[b] - 0.01:
                 print("Reuse of node %s (cov: %f, #reads: %d) %d times" % (b, seg_cov[b], seg_comp[b], seg_mults[b]), file=sys.stderr)
                 reused.append(b)
             else:
