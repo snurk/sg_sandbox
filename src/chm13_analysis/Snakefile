@@ -123,11 +123,10 @@ rule icarus:
 rule chr_analysis:
     input:
         mashmap='{path}.nodes.hg38.out',
-        gfa_noseq='{path}.noseq.gfa',
-        gfa='{path}.gfa'
+        gfa='{path}.noseq.gfa'
     output:
         touch('{path}_chr_analysis/finish.flag')
     log:
         '{path}_chr_analysis.log'
     shell:
-        '$SCRIPT_PATH/chr_analysis.sh {wildcards.path}_chr_analysis {input.mashmap} {input.gfa} {input.gfa_noseq} {REFERENCE}.colors {REFERENCE}.bed &> {log}'
+        '$SCRIPT_PATH/chr_analysis.sh {wildcards.path}_chr_analysis {input.mashmap} {input.gfa} {REFERENCE}.colors {REFERENCE}.bed &> {log}'

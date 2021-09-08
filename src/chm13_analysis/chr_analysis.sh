@@ -1,27 +1,37 @@
 #!/bin/bash
 set -eou
 
+if [ "$#" -lt 5 ]; then
+    echo "Usage: $0 <out_dir> <mashmap.out> <gfa> <chr.colors> <chr.bed> [alignment size threshold, default=50000] [identity threshold, default=98]"
+    exit 1
+fi
+
 module load bedtools
 
-#~/git/gfatools/gfatools view -S simplified.gfa > simplified.noseq.gfa
 root=$(dirname $(readlink -e $0))
 
 out_dir=$1
 mashmap=$(readlink -e $2)
 gfa=$(readlink -e $3)
-gfa_noseq=$(readlink -e $4)
-colors=$(readlink -e $5)
-chrinfo=$(readlink -e $6)
+colors=$(readlink -e $4)
+chrinfo=$(readlink -e $5)
+
+aln_size=50000
+if [ "$#" -gt 5 ]; then
+    aln_size=$6
+fi
+
+identity=98
+if [ "$#" -gt 6 ]; then
+    identity=$7
+fi
 
 mkdir -p $out_dir
 cd $out_dir
 
-ln -sf $colors
-ln -sf $chrinfo
-
 # && $10 > 95.
 #Filter mappings
-awk '{if ($4 >= 50000 + $3 && $NF >= 98) print $0}' $mashmap | sort -k1,1 > filtered.out
+awk '{if ($4 >= '$aln_size' + $3 && $NF >= '$identity') print $0}' $mashmap | sort -k1,1 > filtered.out
 
 #Find nodes associated with a single chromosome
 awk '{print $1,$6}' filtered.out | sort | uniq | awk '{print $1}' | sort -k1,1 | uniq -u > good.nodes.txt
@@ -38,14 +48,13 @@ bedtools coverage -a $chrinfo -b good.nodes.bed | sort -k 7 -n -r > frac.txt
 #~/git/ngs_scripts/gfakluge/assign_coverage.py ../resolved_mapping.txt ../min_read.cov > simplified.cov
 
 rm -f chr*.txt chr*.log chr*.gfa
-$root/../extract_cov_micro.sh < $gfa_noseq > coverage.csv
+$root/../extract_cov_micro.sh < $gfa > coverage.csv
 
 for chr in $(awk {'print $1'} $colors) ; do
     echo "Processing $chr"
     frac=$(grep "${chr}\s" frac.txt | awk '{print $7}' | grep -Po "\.\\d\\d" | sed 's/\.//g')
     grep "${chr}\s" good.nodes.out | awk '{print $1}' | sort | uniq > $chr.txt
-    #$root/../../gfacpp/build/neighborhood $gfa $chr.$frac.gfa $chr.txt 10000 &> $chr.log
-    $root/../../gfacpp/build/neighborhood $gfa_noseq $chr.$frac.noseq.gfa -n $chr.txt -r 10000 -c coverage.csv &> $chr.noseq.log
+    $root/../../gfacpp/build/neighborhood $gfa $chr.$frac.gfa -n $chr.txt -r 10000 -c coverage.csv &> $chr.neib.log
 done
 
 echo "Name,color,chr" > color.csv
