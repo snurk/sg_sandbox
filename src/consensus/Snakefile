@@ -140,7 +140,7 @@ rule info:
     output:
         'cns.renamed.info'
     shell:
-        '$SCRIPT_PATH/../contig_processing/contig_info.py {input} {output}'
+        '$SCRIPT_PATH/../contig_processing/contig_info.py {input} > {output}'
 
 v07_root='/data/PoreTenders/10x_v4CentromereXOnly/freebayes_serge/round2/splitBasedOnNCBI'
 

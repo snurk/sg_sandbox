@@ -4,29 +4,17 @@ from __future__ import division
 
 import sys
 import re
-import gzip
-from mimetypes import guess_type
+import argparse
 from Bio import SeqIO
 
-def gz_open(fn, mode):
-    encoding = guess_type(fn)[1]  # uses file extension
-    if encoding is None:
-        print("Working with text file", fn)
-        return open(fn, mode=mode)
-    elif encoding == 'gzip':
-        print("Working with gzipped file", fn)
-        if mode == 'r':
-            mode = 'rt'
-        elif mode == 'w':
-            mode = 'wt'
-        else:
-            raise ValueError('Unknown mode "{}"'.format(mode))
-        return gzip.open(fn, mode=mode)
-    else:
-        raise ValueError('Unknown file encoding: "{}"'.format(encoding))
+parser = argparse.ArgumentParser(description="Compute contig stats")
+parser.add_argument("contigs", nargs='?', help="FASTA file with contigs (by default reading from stdin)")
+parser.add_argument("--bed-mode", action="store_true", help="Generate valid bed file with records spanning entire contigs")
+parser.add_argument("--coverage-keyword", help="Sequence used to mark the coverage in contig name, followed by a number (e.g. 'cov_')")
+args = parser.parse_args()
 
 def parse_coverage(ctg_name):
-    m = re.search("cov_([\d\.]+)", ctg_name)
+    m = re.search(args.coverage_keyword + "([\d\.]+)", ctg_name)
     if m:
         return float(m.group(1))
     else:
@@ -35,18 +23,30 @@ def parse_coverage(ctg_name):
 def count_gc(seq):
     return (seq.count("G") + seq.count("C")) / len(seq)
 
-if len(sys.argv) < 3:
-    print("Usage: %s <contigs_file> <output>" % sys.argv[0])
-    sys.exit(1)
-
 #print("Producing contig summary for", sys.argv[1])
 
-with open(sys.argv[2], "w") as output:
-    output.write("name\tlength\tcoverage\tGC\n")
-    with gz_open(sys.argv[1], 'r') as i_handle:
-        for record in SeqIO.parse(i_handle, "fasta"):
-            name = record.name
-            length = len(record.seq)
+if args.contigs:
+    print("Reading from file", args.contigs, file=sys.stderr)
+    i_handle = open(args.contigs, 'r')
+else:
+    print("Reading from stdin", file=sys.stderr)
+    i_handle = sys.stdin
+
+if not args.bed_mode:
+    if args.coverage_keyword:
+        print("name\tlength\tGC\tcoverage")
+    else:
+        print("name\tlength\tGC")
+
+for record in SeqIO.parse(i_handle, "fasta"):
+    name = record.name
+    length = len(record.seq)
+    if args.bed_mode:
+        print("%s\t0\t%d" % (name, length))
+    else:
+        gc = count_gc(record.seq)
+        if args.coverage_keyword:
             cov = parse_coverage(record.name)
-            gc = count_gc(record.seq)
-            output.write("%s\t%d\t%f\t%f\n" % (name, length, cov, gc))
+            print("%s\t%d\t%f\t%f" % (name, length, gc, cov))
+        else:
+            print("%s\t%d\t%f" % (name, length, gc))

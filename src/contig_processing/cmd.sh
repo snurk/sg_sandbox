@@ -33,7 +33,7 @@ for f in ~/globus/assemblies/drafts/20200611/*.fasta.gz ~/globus/assemblies/draf
 
     mkdir -p $chr
     if [ ! -f $chr/init.info ] ; then
-        ~/git/ngs_scripts/contig_processing/contig_info.py $f $chr/init.info
+        ~/git/ngs_scripts/contig_processing/contig_info.py $f > $chr/init.info
     fi
 
     rm -f $chr/unpatched.fasta.gz
