@@ -63,6 +63,7 @@ else
     echo "Getting read coverage estimates"
     $bin/ovStoreDump -S $assembly/asm.seqStore -O $ovlstore -coverage -erate 0-$max_erate | tail -n+4 | awk '{print $1,$2}' > min_read.wip.cov
     sed '/^\s*$/d' min_read.wip.cov > min_read.cov
+    rm -f min_read.wip.cov
 fi
 
 if [ -f simplified.gfa ]; then
@@ -74,7 +75,7 @@ else
     else
         echo "Getting overlaps"
         #-nobogartspur
-        $bin/ovStoreDump -bogart $assembly/unitigging/4-unitigger/asm.best.edges -nobogartcontained -nobogartcoveragegap -noredundant -nocontained -nocontainer -erate 0-$max_erate -paf -S $assembly/asm.seqStore/ -O $ovlstore | awk 'BEGIN { OFS = "\t"} {$1="read"$1; $6="read"$6; print $0}' > ovl.paf
+        $bin/ovStoreDump -bogart $assembly/unitigging/4-unitigger/asm.best.edges -nobogartcontained -nobogartcoveragegap -noredundant -nocontained -nocontainer -erate 0-$max_erate -paf -S $assembly/asm.seqStore/ -O $ovlstore | awk 'BEGIN { OFS = "\t"} {$1="read"$1; $6="read"$6; print $0}' > ovl.tmp.paf && mv ovl.tmp.paf ovl.paf
     fi
 
     if [ -f processed.gfa ]; then
@@ -90,8 +91,7 @@ else
     fi
 
     grep "^a" microasm.gfa > utg_reads.gfa
-    $scripts_root/iterate_microasm.sh processed.gfa utg_reads.gfa min_read.cov $BUBBLE_DIFF ${@:5}
-    rm -f utg_reads.gfa
+    $scripts_root/simplif.sh processed.gfa utg_reads.gfa min_read.cov $BUBBLE_DIFF ${@:5}
 fi
 
 if [ ! -f microasm.gfa ]; then
@@ -106,7 +106,7 @@ fi
 
 awk '/^S/{print ">"$2"\n"$3}' simplified.gfa | fold > simplified.nodes.fasta
 
-$scripts_root/resolve_layouts.py simplified.gfa mapping.txt --miniasm microasm.gfa > resolved_mapping.txt
+$scripts_root/resolve_layouts.py simplified.gfa mapping.txt --miniasm utg_reads.gfa > resolved_mapping.txt
 
 $scripts_root/assign_coverage.py resolved_mapping.txt min_read.cov > simplified.cov
 
@@ -116,3 +116,9 @@ rm no_cov.gfa
 
 echo -e "H\tVN:Z:1.0" > simplified.noseq.gfa
 $scripts_root/../gfacpp/gfatools/gfatools view -S simplified.gfa >> simplified.noseq.gfa
+
+$scripts_root/resolve_layouts.py simplified.noseq.gfa mapping.txt --partial-resolve > resolved_utg.txt
+
+rm -f utg_reads.gfa
+
+echo "Pipeline done"
