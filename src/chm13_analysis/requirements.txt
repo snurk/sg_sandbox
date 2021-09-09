@@ -1,5 +1,4 @@
 python=3
-gfapy
 snakemake
 biopython
 pysam
