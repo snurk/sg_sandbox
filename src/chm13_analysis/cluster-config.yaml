@@ -3,7 +3,7 @@ __default__:
     n: 12
     mem: 10
 
-microasm:
+pipe:
    time : 24:00:00
    n: 12
    mem: 60

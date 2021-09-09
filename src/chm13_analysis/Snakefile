@@ -11,26 +11,18 @@ configfile: 'config.yaml'
 CANU_BIN=config['CANU_BIN']
 ASSEMBLY=config['ASSEMBLY']
 BUBBLE_DIFF=config.get('BUBBLE_DIFF', 2000)
-REFERENCE=config.get('REFERENCE_PATH','$SCRIPT_PATH/../../resources/reference.compressed')
+REFERENCE=config.get('REFERENCE_PATH','')
 
 localrules: all
 
 rule all:
     input:
-        #'defensin/simplified.subgraph.quast/icarus.html',
-        #'fragmented_region/simplified.subgraph.quast/icarus.html',
-        #'all_bacs/simplified.subgraph.gfa',
-        'simplified_chr_analysis/finish.flag',
-        'alt_final_simplif/simplified_chr_analysis/finish.flag'
+        'simplified_chr_analysis/finish.flag' if len(REFERENCE) > 0 else 'simplified.gfa'
 
-rule microasm:
+rule pipe:
     input:
         ASSEMBLY + '/unitigging/4-unitigger/asm.best.edges'
     output:
-        'pre_final.simplified.gfa',
-        'pre_final.mapping.txt',
-        'microasm.gfa',
-        'min_read.cov',
         'simplified.gfa',
         'simplified.noseq.gfa',
         'simplified.nodes.fasta'
@@ -45,27 +37,8 @@ rule microasm:
     shell:
         '''
         export BUBBLE_DIFF={BUBBLE_DIFF}
+        export ADVANCED_FINAL_SIMPLIF=0
         $SCRIPT_PATH/../pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} {params.weak_thrs} &> {log}
-        '''
-
-rule alt_final_simp:
-    input:
-        'pre_final.simplified.gfa',
-        'pre_final.mapping.txt',
-        'microasm.gfa',
-        'min_read.cov',
-    output:
-        'alt_final_simplif/simplified.nodes.fasta',
-        'alt_final_simplif/simplified.gfa',
-        'alt_final_simplif/simplified.noseq.gfa',
-    threads:
-        12
-    log:
-        'alt_final_simplif.log'
-    shell:
-        '''
-        grep "^a" microasm.gfa > utg_reads.gfa
-        $SCRIPT_PATH/../final_simplif.sh pre_final.simplified.gfa pre_final.mapping.txt utg_reads.gfa min_read.cov {BUBBLE_DIFF} alt_final_simplif &> {log}
         '''
 
 rule mashmap:
@@ -79,46 +52,6 @@ rule mashmap:
         '{path}.mashmap.log'
     shell:
         '$SCRIPT_PATH/mashmap.sh {input} {REFERENCE}.fasta {output} &> {log}'
-
-rule bac_subgraphs:
-    input:
-        'simplified.gfa'
-    output:
-        'all_bacs/simplified.subgraph.gfa'
-    #~/data/gfa_works/bacs/extract_broken_bac_subgraphs.sh &>> subgraphs.log
-    threads:
-        12
-    log:
-        'bac_subgraphs.log'
-    shell:
-        '$SCRIPT_PATH/extract_all_bac_subgraphs.sh &> {log}'
-
-rule subgraphs_of_interest:
-    input:
-        'simplified.gfa'
-    output:
-        'defensin/simplified.subgraph.gfa',
-        'fragmented_region/simplified.subgraph.gfa'
-    threads:
-        12
-    log:
-        'subgraphs.log'
-    shell:
-        '$SCRIPT_PATH/run_subgraphs.sh &> {log}'
-
-rule icarus:
-    input:
-        'defensin/simplified.subgraph.gfa',
-        'fragmented_region/simplified.subgraph.gfa'
-    output:
-        'defensin/simplified.subgraph.quast/icarus.html',
-        'fragmented_region/simplified.subgraph.quast/icarus.html'
-    threads:
-        12
-    log:
-        'icarus.log'
-    shell:
-        '$SCRIPT_PATH/run_icarus.sh &> {log}'
 
 rule chr_analysis:
     input:

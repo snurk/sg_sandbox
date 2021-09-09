@@ -1,18 +1,18 @@
 #set up automatically if launched via launch.sh
 SCRIPT_PATH: '${SCRIPT_PATH}'
 
-CANU_BIN: '~/git/canu/Linux-amd64/bin'
+CANU_BIN: '${SCRIPT_PATH}/../../build/bin'
 
 ASSEMBLY: '../assembly'
 
-MIN_OVERLAP: 1000
+MIN_OVERLAP: 2000
 
-OVERLAP_ERATE: '0.00001'
+OVERLAP_ERATE: 0.00001
+
+BUBBLE_DIFF: 50
 
 WEAK_OVERLAP_THRESHOLDS:
-    - 2000
-    - 5000
-    - 7000
-    - 9000
+    - 3000
+    - 4000
 
-#ALL_DATA: false
+#REFERENCE_PATH: '/home/nurks2/data/gfa_works/hg38.chronly.compressed'
