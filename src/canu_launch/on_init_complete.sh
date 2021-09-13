@@ -12,8 +12,8 @@ launch_path=$(pwd)
 oea_run_path=${launch_path}_oea
 
 if [ ! -f oea_corrected.fa.gz ] ; then
-    sbatch -W --cpus-per-task=8 --mem=20g --time=8:00:00 --partition=norm $(dirname $0)/fix_errors.sh $CANU_BIN/fixErrors ./ oea_corrected.fa.gz
+    sbatch -W --cpus-per-task=8 --mem=20g --time=8:00:00 --partition=norm $(dirname $0)/fix_errors.sh ./ oea_corrected.fa.gz
 fi
 
-$(dirname $0)/canu.sh $CANU_BIN/canu $oea_run_path $max_read_len ./oea_corrected.fa.gz
+$(dirname $0)/canu.sh $oea_run_path $max_read_len ./oea_corrected.fa.gz
 #onSuccess=$(dirname $0)/on_oea_run_complete.sh
