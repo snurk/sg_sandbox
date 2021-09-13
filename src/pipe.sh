@@ -40,7 +40,7 @@ elif [ -f ../reads.compressed.fasta.gz ]; then
 else
     #-compressed -trimmed
     echo "Getting reads from assembly folder"
-    $bin/sqStoreDumpFASTQ -S ../assembly/asm.seqStore -nolibname -noreadname -fasta -o reads.compressed.wip.gz
+    $bin/sqStoreDumpFASTQ -S $assembly/asm.seqStore -nolibname -noreadname -fasta -o reads.compressed.wip.gz
     mv reads.compressed.wip.fasta.gz reads.compressed.fasta.gz
 fi
 
