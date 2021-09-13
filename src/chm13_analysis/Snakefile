@@ -10,7 +10,6 @@ configfile: 'config.yaml'
 
 CANU_BIN=config['CANU_BIN']
 ASSEMBLY=config['ASSEMBLY']
-BUBBLE_DIFF=config.get('BUBBLE_DIFF', 2000)
 REFERENCE=config.get('REFERENCE_PATH','')
 
 localrules: all
@@ -34,12 +33,21 @@ rule pipe:
         min_ovl=config['MIN_OVERLAP'],
         ovl_er=config['OVERLAP_ERATE'],
         weak_thrs=expand('{thr}', thr=config['WEAK_OVERLAP_THRESHOLDS'])
-    shell:
-        '''
-        export BUBBLE_DIFF={BUBBLE_DIFF}
-        export ADVANCED_FINAL_SIMPLIF=0
-        $SCRIPT_PATH/../pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} {params.weak_thrs} &> {log}
-        '''
+    run:
+        exports=[]
+        shell('rm -f {log}')
+        for name in config:
+            if name.startswith('S_'):
+                exports.append('export %s=%s' % (name, config.get(name)))
+                shell('echo "Setting %s=%s" >> {log}' % (name, config.get(name)))
+        shell('\n'.join(exports) +
+            '\n$SCRIPT_PATH/../pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} {params.weak_thrs} &>> {log}')
+    #shell:
+    #    '''
+    #    export S_BUBBLE_DIFF={S_BUBBLE_DIFF}
+    #    export S_ADVANCED_FINAL_SIMPLIF=0
+    #    $SCRIPT_PATH/../pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} {params.weak_thrs} &> {log}
+    #    '''
 
 rule mashmap:
     input:

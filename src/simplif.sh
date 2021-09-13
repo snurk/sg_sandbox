@@ -2,15 +2,13 @@
 set -eou
 
 if [ "$#" -lt 4 ]; then
-    echo "script.sh <gfa> <utg reads (.gfa with a-lines)> <read cov> <bubble_diff> [weak_overlaps...(default: disabled)]"
+    echo "script.sh <gfa> <utg reads (.gfa with a-lines)> <read cov> [weak_overlaps...(default: disabled)]"
     exit 239
 fi
 
 gfa=$1
 utg_reads=$2
-#bubble_diff=2000
 read_cov=$3
-bubble_diff=$4
 unique_cov_thr=35
 
 scripts_root=$(dirname $(readlink -e $0))
@@ -19,7 +17,6 @@ algo_root=$scripts_root/../gfacpp/build
 #algo_root=~/git/gfacpp/build/
 
 echo "Pruning graph $gfa"
-echo "Bubble diff length set to $bubble_diff"
 
 if [ "$#" -lt 5 ]; then
     echo "Weak overlap removal disabled"
@@ -34,18 +31,10 @@ touch mapping.txt
 #Compaction rounds counter
 cnt=1
 
-#max_tip_len=25000
-max_tip_len=20000
-max_lc_len=30000
-#max_bubble_len=60000
-#0 doesn't leave it completely disabled, could help with artificial stuff
-max_bubble_len=0
-max_isolated_len=20000
-
 #Overlap normalization step
 $algo_root/test simplified.wip.gfa simplified.wip.gfa --prefix m$((cnt++))_ --id-mapping mapping.txt &> normalize.log
 
-for read_cnt_bound in 1 2 3 ; do
+for read_cnt_bound in $(seq 1 $S_MAX_INIT_TIP_READ_CNT) ; do
 
     #FIXME crazy inefficient
     echo "Resolving layout"
@@ -55,13 +44,13 @@ for read_cnt_bound in 1 2 3 ; do
     echo "Read count aware tip clipping (read count bound $read_cnt_bound)"
     # clip tips
     #$algo_root/cnt_aware_tip_clipper simplified.wip.gfa uncompressed.gfa read_cnt.wip.txt $read_cnt_bound 25000 &> cnt_aware_tclipper_$read_cnt_bound.log
-    $algo_root/tip_clipper simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --read-cnt-file read_cnt.wip.txt --max-read-cnt $read_cnt_bound --max-length $max_tip_len &> cnt_aware_tclipper_$read_cnt_bound.log
+    $algo_root/tip_clipper simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --read-cnt-file read_cnt.wip.txt --max-read-cnt $read_cnt_bound --max-length $S_MAX_TIP_LEN &> cnt_aware_tclipper_$read_cnt_bound.log
 
 done
 
 echo "Initial bubble removal"
 # remove bubbles
-$algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --max-length $max_bubble_len --max-diff $bubble_diff &> bfinder_init.log
+$algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --max-length $S_MAX_BUBBLE_LEN --max-diff $S_BUBBLE_DIFF &> bfinder_init.log
 
 weak_it=1
 cp simplified.wip.gfa iteration0.gfa
@@ -78,7 +67,7 @@ else
         #$algo_root/weak_removal simplified.wip.gfa uncompressed.gfa $weak_ovl &> weak_removal${weak_it}.log
 
         if [ $weak_it -eq 1 ] ; then
-            for init_tip_bound in 5000 15000 $max_tip_len ; do
+            for init_tip_bound in 5000 15000 $S_MAX_TIP_LEN ; do
 
                 echo "Initial tip clipping (length bound $init_tip_bound)"
                 # clip tips
@@ -89,14 +78,14 @@ else
         fi
 
         echo "Clipping tips iteration $weak_it"
-        $algo_root/tip_clipper simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --max-length $max_tip_len &> tclipper${weak_it}.log
+        $algo_root/tip_clipper simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --max-length $S_MAX_TIP_LEN &> tclipper${weak_it}.log
         # clip tips
         #$algo_root/tip_clipper simplified.wip.gfa uncompressed.gfa 25000 &> tclipper${weak_it}.log
 
         echo "Removing bubbles iteration $weak_it"
         # remove bubbles
-        $algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --max-length $max_bubble_len --max-diff $bubble_diff &> bfinder${weak_it}.log
-        #$algo_root/bubble_removal simplified.wip.gfa uncompressed.gfa 60000 $bubble_diff &> bfinder${weak_it}.log
+        $algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --max-length $S_MAX_BUBBLE_LEN --max-diff $S_BUBBLE_DIFF &> bfinder${weak_it}.log
+        #$algo_root/bubble_removal simplified.wip.gfa uncompressed.gfa 60000 $S_BUBBLE_DIFF &> bfinder${weak_it}.log
 
         if [ $weak_ovl -gt 7000 ] ; then
             cov_thr=5
@@ -115,7 +104,7 @@ else
         echo "Removing low coverage nodes iteration $weak_it (removing nodes with coverage < $cov_thr)"
         #Remove everything of coverage < 4
         #Used to be 50000
-        $algo_root/low_cov_remover simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --cov-thr $cov_thr --max-length $max_lc_len &> low_cov${weak_it}.log
+        $algo_root/low_cov_remover simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --cov-thr $cov_thr --max-length $S_MAX_LC_LEN &> low_cov${weak_it}.log
         #$algo_root/low_cov_remover simplified.wip.gfa uncompressed.gfa simplified.wip.cov $cov_thr 30000 &> low_cov${weak_it}.log
 
         #echo "Resolving layout"
@@ -136,7 +125,7 @@ cp mapping.txt pre_final.mapping.txt
 cp simplified.wip.gfa pre_final.simplified.gfa
 
 #TODO maybe give option to re-run only final simplification if pre_final graph/mapping available
-if [ "${ADVANCED_FINAL_SIMPLIF}" = 0 ] ; then
+if [ "${S_ADVANCED_FINAL_SIMPLIF}" = 0 ] ; then
     echo "Invoking basic final simplification procedures"
 
     #Resetting compaction rounds counter
@@ -163,8 +152,8 @@ if [ "${ADVANCED_FINAL_SIMPLIF}" = 0 ] ; then
         #$algo_root/shortcut_remover simplified.wip.gfa uncompressed.gfa simplified.wip.cov 30 8 &> shortcut_removal_${final_it}.log
 
         echo "Final bubble removal ${final_it}"
-        $algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length $max_bubble_len --max-diff $bubble_diff &> final_bfinder_${final_it}.log
-        #$algo_root/bubble_removal simplified.wip.gfa uncompressed.gfa 60000 $bubble_diff &> final_bfinder_${final_it}.log
+        $algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length $S_MAX_BUBBLE_LEN --max-diff $S_BUBBLE_DIFF &> final_bfinder_${final_it}.log
+        #$algo_root/bubble_removal simplified.wip.gfa uncompressed.gfa 60000 $S_BUBBLE_DIFF &> final_bfinder_${final_it}.log
 
         cp simplified.wip.gfa simplified.final_${final_it}.gfa
 
@@ -188,7 +177,7 @@ else
         $algo_root/weak_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --min-overlap $weak_thr --prevent-deadends &> weak_removal${final_it}.log
 
         echo "Removing tips"
-        $algo_root/tip_clipper simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length $max_tip_len &> final_tclipper${final_it}.log
+        $algo_root/tip_clipper simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length $S_MAX_TIP_LEN &> final_tclipper${final_it}.log
 
         #FIXME configure properly
         cov_thr=$((final_it + 3))
@@ -199,7 +188,7 @@ else
         #$scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov > simplified.wip.cov
         echo "Removing low coverage nodes iteration $final_it (removing nodes with coverage < $cov_thr)"
         #$algo_root/low_cov_remover simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage simplified.wip.cov --cov-thr $cov_thr --max-length 35000 &> low_cov${final_it}.log
-        $algo_root/low_cov_remover simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --cov-thr $cov_thr --max-length $max_lc_len &> low_cov${final_it}.log
+        $algo_root/low_cov_remover simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --cov-thr $cov_thr --max-length $S_MAX_LC_LEN &> low_cov${final_it}.log
 
         echo "Resolving layout"
         $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
@@ -217,8 +206,8 @@ else
         $algo_root/shortcut_remover simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-base-cov $unique_cov_thr --min-path-cov 8 &> shortcut_removal_${final_it}.log
 
         echo "Final bubble removal ${final_it}"
-        $algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 0 --max-diff $bubble_diff &> final_bfinder_${final_it}.log
-        #$algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 60000 --max-diff $bubble_diff &> final_bfinder_${final_it}.log
+        $algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 0 --max-diff $S_BUBBLE_DIFF &> final_bfinder_${final_it}.log
+        #$algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 60000 --max-diff $S_BUBBLE_DIFF &> final_bfinder_${final_it}.log
 
         #FIXME parameterize
         echo "Resolving layout"
@@ -261,7 +250,7 @@ fi
 
 echo "Removing isolated nodes"
 # remove isolated nodes
-$algo_root/isolated_remover simplified.wip.gfa simplified.gfa --max-length $max_isolated_len &> iremover.log
+$algo_root/isolated_remover simplified.wip.gfa simplified.gfa --max-length $S_MAX_ISOLATED_LEN &> iremover.log
 
 #rm -f iteration*.gfa
 rm -f *.wip.*

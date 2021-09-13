@@ -1,7 +1,7 @@
 #set up automatically if launched via launch.sh
 SCRIPT_PATH: '${SCRIPT_PATH}'
 
-CANU_BIN: '${SCRIPT_PATH}/../../build/bin'
+CANU_BIN: '${SCRIPT_PATH}/../../canu/build/bin'
 
 ASSEMBLY: '../assembly'
 
@@ -9,10 +9,23 @@ MIN_OVERLAP: 2000
 
 OVERLAP_ERATE: 0.00001
 
-BUBBLE_DIFF: 50
+S_MAX_INIT_TIP_READ_CNT: 3
+
+S_BUBBLE_DIFF: 50
+
+S_ADVANCED_FINAL_SIMPLIF: 0
+
+#FIXME next three can probably be one
+S_MAX_TIP_LEN: 20000
+S_MAX_LC_LEN: 30000
+S_MAX_ISOLATED_LEN: 20000
+
+#0 doesn't leave it completely disabled, could help with artificial stuff
+S_MAX_BUBBLE_LEN: 0
+#S_MAX_BUBBLE_LEN: 60000
 
 WEAK_OVERLAP_THRESHOLDS:
     - 3000
     - 4000
 
-#REFERENCE_PATH: '/home/nurks2/data/gfa_works/hg38.chronly.compressed'
+#ALL_DATA: false

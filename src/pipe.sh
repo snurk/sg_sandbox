@@ -26,13 +26,6 @@ else
     echo "Will use overlap error threshold of $max_erate"
 fi
 
-if [ -z "$BUBBLE_DIFF" ]; then
-    echo "BUBBLE_DIFF is unset using default 2Kb"
-    BUBBLE_DIFF=2000
-else
-    echo "BUBBLE_DIFF is set to $BUBBLE_DIFF"
-fi
-
 #if [ "$#" -lt 5 ]; then
 #    echo "Weak overlap removal disabled"
 #else
@@ -91,7 +84,7 @@ else
     fi
 
     grep "^a" microasm.gfa > utg_reads.gfa
-    $scripts_root/simplif.sh processed.gfa utg_reads.gfa min_read.cov $BUBBLE_DIFF ${@:5}
+    $scripts_root/simplif.sh processed.gfa utg_reads.gfa min_read.cov ${@:5}
 fi
 
 if [ ! -f microasm.gfa ]; then
