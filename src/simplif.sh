@@ -9,7 +9,6 @@ fi
 gfa=$1
 utg_reads=$2
 read_cov=$3
-unique_cov_thr=35
 
 scripts_root=$(dirname $(readlink -e $0))
 
@@ -18,10 +17,10 @@ algo_root=$scripts_root/../gfacpp/build
 
 echo "Pruning graph $gfa"
 
-if [ "$#" -lt 5 ]; then
+if [ "$#" -lt 4 ]; then
     echo "Weak overlap removal disabled"
 else
-    echo "Will use iterative weak_ovl thresholds" "${@:5}"
+    echo "Will use iterative weak_ovl thresholds" "${@:4}"
 fi
 
 grep -v "^a" $gfa | grep -v "^x" > simplified.wip.gfa
@@ -55,11 +54,11 @@ $algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --pref
 weak_it=1
 cp simplified.wip.gfa iteration0.gfa
 
-if [ "$#" -lt 5 ]; then
+if [ "$#" -lt 4 ]; then
     echo "Will not remove weak connections"
 else
-    echo "Will use iterative weak_ovl thresholds" "${@:5}"
-    for weak_ovl in "${@:5}" ; do
+    echo "Will use iterative weak_ovl thresholds" "${@:4}"
+    for weak_ovl in "${@:4}" ; do
 
         echo "Removing weak connections with threshold $weak_ovl"
         # remove weak links if alternatives present
@@ -138,17 +137,17 @@ if [ "${S_ADVANCED_FINAL_SIMPLIF}" = 0 ] ; then
         echo "Resolving layout"
         $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
         echo "Killing loops"
-        $algo_root/loop_killer simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-base-cov $unique_cov_thr &> loop_killer_${final_it}.log
+        $algo_root/loop_killer simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-base-cov $S_UNIQUE_COV_THR &> loop_killer_${final_it}.log
         #$algo_root/loop_killer simplified.wip.gfa uncompressed.gfa simplified.wip.cov 30 &> loop_killer_${final_it}.log
 
         echo "Removing simple bulges ${final_it}"
-        $algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 10000 --max-diff 3 --min-alt-ovl 10000 &> simple_br_${final_it}.log
-        #$algo_root/simple_bulge_removal simplified.wip.gfa uncompressed.gfa -l 10000 -d 3 --min-alt-ovl 10000 &> simple_br_${final_it}.log
+        $algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 10000 --max-diff 3 --min-alt-ovl $S_MIN_ALT_OVL &> simple_br_${final_it}.log
+        #$algo_root/simple_bulge_removal simplified.wip.gfa uncompressed.gfa -l 10000 -d 3 --min-alt-ovl $S_MIN_ALT_OVL &> simple_br_${final_it}.log
 
         echo "Resolving layout"
         $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
         echo "Removing shortcuts"
-        $algo_root/shortcut_remover simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-base-cov $unique_cov_thr --min-path-cov 8 &> shortcut_removal_${final_it}.log
+        $algo_root/shortcut_remover simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-base-cov $S_UNIQUE_COV_THR --min-path-cov 8 &> shortcut_removal_${final_it}.log
         #$algo_root/shortcut_remover simplified.wip.gfa uncompressed.gfa simplified.wip.cov 30 8 &> shortcut_removal_${final_it}.log
 
         echo "Final bubble removal ${final_it}"
@@ -193,17 +192,17 @@ else
         echo "Resolving layout"
         $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
         echo "Killing loops"
-        $algo_root/loop_killer simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-base-cov $unique_cov_thr &> loop_killer_${final_it}.log
+        $algo_root/loop_killer simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-base-cov $S_UNIQUE_COV_THR &> loop_killer_${final_it}.log
 
         #FIXME parameterize
         echo "Removing simple bulges ${final_it}"
-        #$algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 10000 --max-diff 3 --min-alt-ovl 10000 &> simple_br_${final_it}.log
-        $algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 0 --max-diff 3 --min-alt-ovl 10000 &> simple_br_${final_it}.log
+        #$algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 10000 --max-diff 3 --min-alt-ovl $S_MIN_ALT_OVL &> simple_br_${final_it}.log
+        $algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 0 --max-diff 3 --min-alt-ovl $S_MIN_ALT_OVL &> simple_br_${final_it}.log
 
         echo "Resolving layout"
         $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
         echo "Removing shortcuts"
-        $algo_root/shortcut_remover simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-base-cov $unique_cov_thr --min-path-cov 8 &> shortcut_removal_${final_it}.log
+        $algo_root/shortcut_remover simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-base-cov $S_UNIQUE_COV_THR --min-path-cov 8 &> shortcut_removal_${final_it}.log
 
         echo "Final bubble removal ${final_it}"
         $algo_root/bubble_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --max-length 0 --max-diff $S_BUBBLE_DIFF &> final_bfinder_${final_it}.log
@@ -214,8 +213,8 @@ else
         $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
         echo "Removing low frequency hets in unique areas"
         $algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) \
-            --min-alt-ovl 10000 --max-unique-cov $unique_cov_thr --max-cov-ratio 0.33 --max-length 10000 --max-diff 500 &> low_freq_br_${final_it}.log
-            #--min-alt-ovl 10000 --max-unique-cov 30. --max-cov-ratio 0.33 --max-length 30000 --max-diff 5000 &> low_freq_br_${final_it}.log
+            --min-alt-ovl $S_MIN_ALT_OVL --max-unique-cov $S_UNIQUE_COV_THR --max-cov-ratio 0.33 --max-length 10000 --max-diff 500 &> low_freq_br_${final_it}.log
+            #--min-alt-ovl $S_MIN_ALT_OVL --max-unique-cov 30. --max-cov-ratio 0.33 --max-length 30000 --max-diff 5000 &> low_freq_br_${final_it}.log
 
         #FIXME parameterize
         #FIXME isn't it still quite risky?
@@ -223,16 +222,16 @@ else
         $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
         echo "Removing other variants in unique areas"
         $algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) \
-            --min-alt-ovl 10000 --max-unique-cov 28. --max-length 10000 --max-diff 500 --max-cov-ratio 1.5 --max-shortening 50 &> simple_unique_br_${final_it}.log
+            --min-alt-ovl $S_MIN_ALT_OVL --max-unique-cov $S_CONS_UNIQUE_COV_THR --max-length 10000 --max-diff 500 --max-cov-ratio 1.5 --max-shortening 50 &> simple_unique_br_${final_it}.log
         #$algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) \
-        #    --min-alt-ovl 10000 --max-unique-cov 35. --max-length 20000 --max-diff 10000 --max-cov-ratio 1.5 --max-shortening 50 &> simple_unique_br_${final_it}.log
+        #    --min-alt-ovl $S_MIN_ALT_OVL --max-unique-cov 35. --max-length 20000 --max-diff 10000 --max-cov-ratio 1.5 --max-shortening 50 &> simple_unique_br_${final_it}.log
 
         #FIXME parameterize
         echo "Resolving layout"
         $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt
         echo "Removing two-sided nongenomic links"
         $algo_root/nongenomic_link_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) \
-            --unique-len 150000 --max-unique-cov $unique_cov_thr --reliable-cov 15. --reliable-len 20000 --both-sides &> two_sided_nongenomic_${final_it}.log
+            --unique-len 150000 --max-unique-cov $S_UNIQUE_COV_THR --reliable-cov $S_RELIABLE_COV_THR --reliable-len $S_RELIABLE_LEN --both-sides &> two_sided_nongenomic_${final_it}.log
         #$algo_root/nongenomic_link_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix f$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) \
         #    --unique-len 100000 --max-unique-cov 40. --reliable-cov 12. --reliable-len 20000 --both-sides &> two_sided_nongenomic_${final_it}.log
 
