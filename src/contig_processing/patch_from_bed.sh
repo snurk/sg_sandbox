@@ -12,6 +12,6 @@ name=$(basename $prefix)
 echo ">$name" > $prefix.tmp
 bedtools getfasta -s -fi $1 -bed $2 | grep -v ">" >> $prefix.tmp
 
-$(dirname $(readlink -e $0))/contig_length_filter.py 1 $prefix.tmp > $prefix.fasta
+$(dirname $(readlink -e $0))/length_filter.py $prefix.tmp > $prefix.fasta
 
 rm -f $prefix.tmp
