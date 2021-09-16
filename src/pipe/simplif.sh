@@ -10,7 +10,7 @@ gfa=$1
 utg_reads=$2
 read_cov=$3
 
-scripts_root=$(dirname $(readlink -e $0))
+scripts_root=$(dirname $(readlink -e $0))/..
 algo_root=$scripts_root/../gfacpp/build
 
 echo "Pruning graph $gfa"

@@ -93,18 +93,18 @@ fi
 
 awk '/^S/{print ">"$2"\n"$3}' simplified.gfa | fold > simplified.nodes.fasta
 
-$scripts_root/resolve_layouts.py simplified.gfa mapping.txt --miniasm utg_reads.gfa > resolved_mapping.txt
+$scripts_root/../resolve_layouts.py simplified.gfa mapping.txt --miniasm utg_reads.gfa > resolved_mapping.txt
 
-$scripts_root/assign_coverage.py resolved_mapping.txt min_read.cov > simplified.cov
+$scripts_root/../assign_coverage.py resolved_mapping.txt min_read.cov > simplified.cov
 
 mv simplified.gfa no_cov.gfa
-$scripts_root/inject_coverage.py simplified.cov < no_cov.gfa > simplified.gfa
+$scripts_root/../inject_coverage.py simplified.cov < no_cov.gfa > simplified.gfa
 rm no_cov.gfa
 
 echo -e "H\tVN:Z:1.0" > simplified.noseq.gfa
-$scripts_root/../gfacpp/gfatools/gfatools view -S simplified.gfa >> simplified.noseq.gfa
+$scripts_root/../../gfacpp/gfatools/gfatools view -S simplified.gfa >> simplified.noseq.gfa
 
-$scripts_root/resolve_layouts.py simplified.noseq.gfa mapping.txt --partial-resolve > resolved_utg.txt
+$scripts_root/../resolve_layouts.py simplified.noseq.gfa mapping.txt --partial-resolve > resolved_utg.txt
 
 rm -f utg_reads.gfa
 

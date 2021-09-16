@@ -46,7 +46,7 @@ rule pipe:
             shell('echo "Setting %s=\\\"%s\\\"" >> {log}'  % (var, val))
 
         shell('\n'.join(['export %s="%s"' % (var, val) for var, val in exports]) +
-              '\n$SCRIPT_PATH/../pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} &>> {log}')
+              '\n$SCRIPT_PATH/../pipe/pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} &>> {log}')
 
 rule mashmap:
     input:

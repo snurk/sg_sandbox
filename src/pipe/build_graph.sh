@@ -6,7 +6,7 @@ if [ "$#" -lt 2 ]; then
     exit 239
 fi
 
-scripts_root=$(dirname $(readlink -e $0))
+scripts_root=$(dirname $(readlink -e $0))/..
 reads=$1
 ovl_paf=$2
 
