@@ -2,7 +2,7 @@
 set -eou
 
 if [ "$#" -lt 2 ]; then
-    echo "script.sh <canu bin> <canu assembly folder> [min_overlap = 2000] [max_erate = 0.001] [weak_overlaps...(default: disabled)]"
+    echo "script.sh <canu bin> <canu assembly folder> [min_overlap = 2000] [max_erate = 0.001]"
     echo "NB: for HiFi analysis reads should be in homopolymer compressed space to match the overlaps"
     echo "NB2!!!: never use max_erate higher than what was used by bogart"
     exit 239
@@ -25,12 +25,6 @@ else
     max_erate=$4
     echo "Will use overlap error threshold of $max_erate"
 fi
-
-#if [ "$#" -lt 5 ]; then
-#    echo "Weak overlap removal disabled"
-#else
-#    echo "Will use iterative weak_ovl thresholds" "${@:5}"
-#fi
 
 if [ -f reads.compressed.fasta.gz ]; then
     echo "File reads.compressed.fasta.gz was found in the folder and will be reused"
@@ -84,7 +78,7 @@ else
     fi
 
     grep "^a" microasm.gfa > utg_reads.gfa
-    $scripts_root/simplif.sh processed.gfa utg_reads.gfa min_read.cov ${@:5}
+    $scripts_root/simplif.sh processed.gfa utg_reads.gfa min_read.cov
 fi
 
 if [ ! -f microasm.gfa ]; then

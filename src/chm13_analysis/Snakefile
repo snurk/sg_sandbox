@@ -31,23 +31,22 @@ rule pipe:
         'pipe.log'
     params:
         min_ovl=config['MIN_OVERLAP'],
-        ovl_er=config['OVERLAP_ERATE'],
-        weak_thrs=expand('{thr}', thr=config['WEAK_OVERLAP_THRESHOLDS'])
+        ovl_er=config['OVERLAP_ERATE']
     run:
         exports=[]
         shell('rm -f {log}')
+
         for name in config:
             if name.startswith('S_'):
-                exports.append('export %s=%s' % (name, config.get(name)))
-                shell('echo "Setting %s=%s" >> {log}' % (name, config.get(name)))
-        shell('\n'.join(exports) +
-            '\n$SCRIPT_PATH/../pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} {params.weak_thrs} &>> {log}')
-    #shell:
-    #    '''
-    #    export S_BUBBLE_DIFF={S_BUBBLE_DIFF}
-    #    export S_ADVANCED_FINAL_SIMPLIF=0
-    #    $SCRIPT_PATH/../pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} {params.weak_thrs} &> {log}
-    #    '''
+                exports.append((name, config.get(name)))
+        exports.append(('WEAK_OVERLAP_THRESHOLDS', ' '.join([str(i).replace(' ', ':') for i in config.get('WEAK_OVERLAP_THRESHOLDS')])))
+        exports.append(('NO_DEADEND_OVERLAP_THRESHOLDS', ' '.join([str(i).replace(' ', ':') for i in config.get('NO_DEADEND_OVERLAP_THRESHOLDS')])))
+
+        for var, val in exports:
+            shell('echo "Setting %s=\\\"%s\\\"" >> {log}'  % (var, val))
+
+        shell('\n'.join(['export %s="%s"' % (var, val) for var, val in exports]) +
+              '\n$SCRIPT_PATH/../pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} &>> {log}')
 
 rule mashmap:
     input:
