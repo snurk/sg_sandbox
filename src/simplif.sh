@@ -142,7 +142,7 @@ for it_setting in $(echo $NO_DEADEND_OVERLAP_THRESHOLDS | tr ' ' '\n') ; do
 
         #FIXME parameterize
         echo "Removing two-sided nongenomic links"
-        $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt 2> two_sided_nongenomic_${weak_it}.lo
+        $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt 2> two_sided_nongenomic_${weak_it}.log
         $algo_root/nongenomic_link_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --unique-len $S_UNIQUE_LEN --max-unique-cov $S_UNIQUE_COV_THR --reliable-cov $S_RELIABLE_COV --reliable-len $S_RELIABLE_LEN --both-sides &>> two_sided_nongenomic_${weak_it}.log
 
         #echo "Removing one-sided nongenomic links"
