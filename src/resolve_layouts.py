@@ -138,4 +138,4 @@ for s in names:
     resolve(s + '+', resolved)
     print(s, ','.join(resolved))
 
-print("All done", file=sys.stderr)
+print("Layout resolution done", file=sys.stderr)
