@@ -60,10 +60,10 @@ def read_cigars(gfa_fn):
 #    return None
 
 def trim_len(cigar):#, second=True):
-    pos = 0
     match = re.match('^(\d+)M$', cigar)
     assert match
     return int(match.group(1))
+    #pos = 0
     #for match in re.finditer('(\d+)M', cigar):
     #    pos += int(match.group(1))
     #for match in re.finditer('(\d+)I' if second else '(\d+)D', cigar):
