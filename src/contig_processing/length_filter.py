@@ -5,6 +5,7 @@ from __future__ import division
 import sys
 import argparse
 from Bio import SeqIO
+import select
 
 parser = argparse.ArgumentParser(description="Filter FASTA file based on length range and optionally trim sequences")
 parser.add_argument("fasta", nargs='?', help="FASTA file (by default reading from stdin)")
@@ -19,8 +20,14 @@ if args.fasta:
     print("Reading from file", args.fasta, file=sys.stderr)
     i_handle = open(args.fasta, 'r')
 else:
-    print("Reading from stdin", file=sys.stderr)
-    i_handle = sys.stdin
+    # Check that there is input ready
+    if sys.stdin in select.select([sys.stdin], [], [], 0.)[0]:
+        print("Reading from stdin", file=sys.stderr)
+        i_handle = sys.stdin
+    else:
+        parser.print_help(sys.stderr)
+        print("Tried reading from stdin, but it was empty!", file=sys.stderr)
+        sys.exit(1)
 
 def check_len(n):
     return n >= args.min and (args.trim or n <= args.max)

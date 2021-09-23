@@ -6,6 +6,7 @@ import sys
 import re
 import argparse
 from Bio import SeqIO
+import select
 
 parser = argparse.ArgumentParser(description="Compute contig stats")
 parser.add_argument("contigs", nargs='?', help="FASTA file with contigs (by default reading from stdin)")
@@ -29,8 +30,14 @@ if args.contigs:
     print("Reading from file", args.contigs, file=sys.stderr)
     i_handle = open(args.contigs, 'r')
 else:
-    print("Reading from stdin", file=sys.stderr)
-    i_handle = sys.stdin
+    # Check that there is input ready
+    if sys.stdin in select.select([sys.stdin], [], [], 0.)[0]:
+        print("Reading from stdin", file=sys.stderr)
+        i_handle = sys.stdin
+    else:
+        parser.print_help(sys.stderr)
+        print("Tried reading from stdin, but it was empty!", file=sys.stderr)
+        sys.exit(1)
 
 if not args.bed_mode:
     if args.coverage_keyword:
