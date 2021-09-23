@@ -36,8 +36,9 @@ touch mapping.txt
 #Compaction rounds counter
 cnt=1
 
-#Overlap normalization step
-$algo_root/test simplified.wip.gfa simplified.wip.gfa --prefix m$((cnt++))_ --id-mapping mapping.txt &> normalize.log
+#Overlap normalization step. Doesn't work on non-compacted graph -- use preprocess_gfa.py instead!!!
+#Redundant for the main pipeline.
+#$algo_root/test simplified.wip.gfa simplified.wip.gfa --prefix m$((cnt++))_ --id-mapping mapping.txt &> normalize.log
 
 for read_cnt_bound in $(seq 1 $S_MAX_INIT_TIP_READ_CNT) ; do
 
