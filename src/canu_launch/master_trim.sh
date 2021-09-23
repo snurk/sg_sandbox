@@ -18,6 +18,7 @@ done
 
 base_path=$(dirname $(readlink -e $0))
 export CANU_BIN=$(readlink -e $base_path/../../canu/build/bin/)
-export MAX_HPC_LEN=1000000
+#Threshold for ignoring reads in Bogart output
+export MAX_BOGART_LEN=1000000
 
 $base_path/canu.sh $out_dir/canu $out_dir/reads.fa.gz onSuccess="$base_path/on_init_complete.sh"
