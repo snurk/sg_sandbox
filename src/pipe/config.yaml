@@ -5,38 +5,56 @@ CANU_BIN: '${SCRIPT_PATH}/../../canu/build/bin'
 
 ASSEMBLY: 'assembly'
 
-MIN_OVERLAP: 2000
-
-OVERLAP_ERATE: 0.00001
+# Must match values used by Bogart module of Canu
+MIN_OVERLAP: 1000
+OVERLAP_ERATE: 0.00001 # don't change
 
 S_MAX_INIT_TIP_READ_CNT: 3
 
 # Enable for additional non-genomic link removal procedures
 S_ADVANCED_FINAL_SIMPLIF: 1
 
-#TODO next three can probably be one
-S_MAX_TIP_LEN: 20000
-S_MAX_LC_LEN: 30000
-S_MAX_ISOLATED_LEN: 20000
+#TWEAK ME!!!
+#Hint at max HPC read length for simplification (use something like max_len * 1.4 * 1.1)
+#Guides simplification parameters, no read filtering/trimming
+S_MAX_RL: 18000
+
+S_MAX_TIP_LEN: $((S_MAX_RL + 2000))
+#S_MAX_LC_LEN: 30000
+S_MAX_LC_LEN: $S_MAX_RL
+#S_MAX_ISOLATED_LEN: 20000
+S_MAX_ISOLATED_LEN: $((S_MAX_RL * 3 / 2))
 
 #Proxy for basic iteration
 WEAK_OVERLAP_THRESHOLDS:
-    - "3000 2"
-    - "4000 3"
+    - 2000 1
+    - 3000 2
+    - 4000 3
 
+#TWEAK ME!!!
 #Proxy for final iteration
 NO_DEADEND_OVERLAP_THRESHOLDS:
-    - "5000 4"
-    - "6000 5"
+    - 5000 4
+    - 6000 5
 
+#Maybe set it to the final value of weak threshold?
 S_MIN_ALT_OVL: 10000
 
-S_UNIQUE_COV_THR: 35
-S_CONS_UNIQUE_COV_THR: 28
-S_RELIABLE_COV: 15
-S_RELIABLE_LEN: 20000
+#TWEAK ME!!!
+#Expected coverage of 'unique' nodes in string graph
+S_EXPECTED_COV: 20
+#S_EXPECTED_COV: 10
+#Most copy number TWO nodes should have coverage above this value
+S_UNIQUE_COV_THR: $((S_EXPECTED_COV * 7 / 4)) # 75% higher than expected
+#NO copy number TWO nodes should have coverage below this value
+S_CONS_UNIQUE_COV_THR: $((S_EXPECTED_COV * 7 / 5)) # 40% higher than expected
+#Next two are "one of is enough"
+S_RELIABLE_COV: $((S_EXPECTED_COV * 3 / 4)) # at least 75% of expected
+#S_RELIABLE_LEN: 20000
+S_RELIABLE_LEN: $((S_MAX_RL * 11 / 10))
 
-S_UNIQUE_LEN: 150000
+#Nodes longer than this are definitely unique
+S_UNIQUE_LEN: 100000
 
 #0 doesn't leave it completely disabled, helps with artificial stuff.
 #(In this case DIFF helps handling overlap imperfections)

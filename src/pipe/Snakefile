@@ -34,7 +34,6 @@ rule pipe:
         ovl_er=config['OVERLAP_ERATE']
     run:
         exports=[]
-        shell('rm -f {log}')
 
         for name in config:
             if name.startswith('S_'):
@@ -42,10 +41,8 @@ rule pipe:
         exports.append(('WEAK_OVERLAP_THRESHOLDS', ' '.join([str(i).replace(' ', ':') for i in config.get('WEAK_OVERLAP_THRESHOLDS')])))
         exports.append(('NO_DEADEND_OVERLAP_THRESHOLDS', ' '.join([str(i).replace(' ', ':') for i in config.get('NO_DEADEND_OVERLAP_THRESHOLDS')])))
 
-        for var, val in exports:
-            shell('echo "Setting %s=\\\"%s\\\"" >> {log}'  % (var, val))
-
-        shell('\n'.join(['export %s="%s"' % (var, val) for var, val in exports]) +
+        shell('\n'.join(['export %s="%s"' % (var, val) for var, val in exports]) + '\n' +
+              '\n'.join(['echo %s: \\"$%s\\" &>> {log}' % (var, var) for var, _ in exports]) +
               '\n$SCRIPT_PATH/../pipe/pipe.sh {CANU_BIN} {ASSEMBLY} {params.min_ovl} {params.ovl_er} &>> {log}')
 
 rule mashmap:
