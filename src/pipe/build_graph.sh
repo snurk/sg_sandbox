@@ -29,6 +29,6 @@ $scripts_root/../miniasm/miniasm -e 0 -d 0 -n 0 -m $min_ovl -s $min_ovl -f $read
 # Deduplicate copies of same links.
 # + Trick to make gfapy process the custom tag
 echo "Deduplicating links"
-$scripts_root/preprocess_gfa.py microasm.gfa | sed 's/SD/sd/g' > processed.gfa 2> preprocess.log
+$scripts_root/preprocess_gfa.py microasm.gfa 2> preprocess.log | sed 's/SD/sd/g' > processed.gfa
 
 echo "Microasm construction complete"
