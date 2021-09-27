@@ -15,7 +15,7 @@ S_MAX_INIT_TIP_READ_CNT: 3
 S_ADVANCED_FINAL_SIMPLIF: 1
 
 #TWEAK ME!!!
-#Hint at max HPC read length for simplification (use something like max_len * 1.4 * 1.1)
+#Hint at max HPC read length for simplification (use something like max_len / 1.4 * 1.1)
 #Guides simplification parameters, no read filtering/trimming
 S_MAX_RL: 18000
 
