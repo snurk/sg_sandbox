@@ -6,11 +6,15 @@ import time
 import math
 
 #basic variable setup
-configfile: 'config.yaml'
+#configfile: 'config.yaml'
 
 CANU_BIN=config['CANU_BIN']
 ASSEMBLY=config['ASSEMBLY']
 REFERENCE=config.get('REFERENCE_PATH','')
+
+print("CANU_BIN:", CANU_BIN)
+print("ASSEMBLY:", ASSEMBLY)
+print("REFERENCE:", REFERENCE)
 
 localrules: all
 

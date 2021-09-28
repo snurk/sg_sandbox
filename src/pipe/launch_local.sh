@@ -2,17 +2,17 @@
 set -eou
 
 if [ "$#" -lt 1 ]; then
-    echo "script.sh <out_dir (with config.yaml)> [additional snakemake arguments]*"
+    echo "script.sh <with config.yaml> <out_dir> [additional snakemake arguments]*"
     exit
 fi
 
-module load snakemake
-dir=$(readlink -e $1)
+config=$(readlink -e $1)
+dir=$(readlink -e $2)
 
 cd $(dirname $0)
 
 export SCRIPT_PATH=$(readlink -e .)
 
-snakemake --latency-wait 60 -j 8 --directory $dir "${@:2}"
+snakemake --latency-wait 60 -j 8 --configfile $config --directory $dir "${@:3}"
 
 cd -
