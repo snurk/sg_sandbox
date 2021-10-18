@@ -2,8 +2,13 @@
 set -eou
 
 if [ "$#" -lt 4 ]; then
-    echo "Usage: $0 <ONT reads> <graph in gfa> <file with names of single-copy unitigs> <out folder>"
+    echo "Usage: $0 <ONT reads> <graph in gfa> <file with names of single-copy unitigs> <out folder> [alignment threads, default = 8]"
     exit 1
+fi
+
+threads=8
+if [ "$#" -gt 4 ]; then
+    threads=$5
 fi
 
 base_path=$(dirname $(readlink -e $0))
@@ -17,7 +22,8 @@ mkdir -p $out
 
 if [ ! -f $out/ga_ont.gaf ] ; then
     echo "Aligning reads with GraphAligner"
-    sbatch --ntasks 1 -W --mem 80G --cpus-per-task 24 --time 24:00:00 $base_path/ga_ont.sh $g $reads $out/ga_ont 24
+    #sbatch --ntasks 1 -W --mem 80G --cpus-per-task 24 --time 24:00:00 $base_path/ga_ont.sh $g $reads $out/ga_ont $threads
+    $base_path/ga_ont.sh $g $reads $out/ga_ont $threads
 fi
 
 echo "Proceeding with resolution"

@@ -10,3 +10,6 @@
 [submodule "canu"]
 	path = canu
 	url = git@github.com:marbl/canu.git
+[submodule "GraphAligner"]
+	path = GraphAligner
+	url = https://github.com/maickrau/GraphAligner.git
