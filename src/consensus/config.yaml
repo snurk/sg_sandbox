@@ -1,0 +1,6 @@
+CANU_BIN: '${CANU_BIN}'
+RANDOM_SEED: '${RANDOM_SEED}'
+CHR: '${CHR}'
+SEQ_STORE: '../../updated_raw.seqStore'
+OVL_STORE: '../../canu_oea/unitigging/4-unitigger/asm.0.all.ovlStore'
+SG_ROOT: '../../microasm'

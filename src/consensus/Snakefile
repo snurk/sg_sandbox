@@ -5,25 +5,24 @@ import glob
 import time
 import math
 
-BIN='~/git/canu2/build/bin'
-SEQ_STORE='../../raw_seqstore_works/asm.seqStore'
-#ovlstore=../../assembly/unitigging/asm.ovlStore
-OVL_STORE='../../assembly/unitigging/4-unitigger/asm.0.all.ovlStore'
+CANU_BIN=config['CANU_BIN']
+SEQ_STORE=config['SEQ_STORE']
+OVL_STORE=config['OVL_STORE']
+SG_ROOT=config['SG_ROOT']
+RANDOM_SEED=config['RANDOM_SEED']
 
 CNS_PRE='cns'
-#seqstore=../../../assembly/asm.seqStore
 
 rule all:
     input:
-        #'v07.bam',
-        #'joined.fasta',
+        'joined.fasta',
         'cns.renamed.info'
 
 rule joined:
     input:
-        utgs='../../8k/simplified.nodes.fasta',
+        utgs=SG_ROOT + '/simplified.nodes.fasta',
         utg_layout='layout.txt',
-        gfa='../../8k/simplified.noseq.gfa'
+        gfa=SG_ROOT + '/simplified.noseq.gfa'
     output:
         'joined.fasta'
     log:
@@ -34,7 +33,7 @@ rule joined:
 rule backbone_layout:
     input:
         utg_layout='layout.txt',
-        utg_composition='../resolved_mapping.txt'
+        utg_composition=SG_ROOT + '/resolved_mapping.txt'
     output:
         'backbone_layout.txt',
         'contig_names.txt'
@@ -60,12 +59,11 @@ rule layout_reads:
     log:
         'layout_reads.log'
     params:
-        #seed=239,
         #seed=1, #changed for chr10 (also later for chr18)
+        #FIXME maybe remove?
         size=200000000
     shell:
-      '{BIN}/layoutReads -S {SEQ_STORE} -O {OVL_STORE} -eg 0.00001 -eM 0.00001 -R {input} -seed $RANDOM_SEED -gs {params.size} -o {CNS_PRE} &> {log}'
-      #'{BIN}/layoutReads -S {SEQ_STORE} -O {OVL_STORE} -eg 0.00001 -eM 0.00001 -R {input} -seed {params.seed} -gs {params.size} -o {CNS_PRE} &> {log}'
+      '{CANU_BIN}/layoutReads -S {SEQ_STORE} -O {OVL_STORE} -eg 0.00001 -eM 0.00001 -R {input} -seed {RANDOM_SEED} -gs {params.size} -o {CNS_PRE} &> {log}'
 
 #  Magic values
 #    partitionSize    - make partitions this big, relative to the biggest contig
@@ -83,7 +81,7 @@ checkpoint partition:
     log:
         'partitioning.log'
     shell:
-        '{BIN}/utgcns -V -S {SEQ_STORE} -T {CNS_PRE}.ctgStore 1 -partition 0.10 1.50 0.01 &> {log}'
+        '{CANU_BIN}/utgcns -V -S {SEQ_STORE} -T {CNS_PRE}.ctgStore 1 -partition 0.10 1.50 0.01 &> {log}'
 
 #Add "-V -V -V " for debug info
 rule consensus:
@@ -96,10 +94,11 @@ rule consensus:
     threads: 8
     params:
         ovl_len=2000,
+        #FIXME parameterize
         #error_rate=0.08
         error_rate=0.05
     shell:
-      '{BIN}/utgcns -V -V -V \
+      '{CANU_BIN}/utgcns -V -V -V \
         -R {CNS_PRE}.ctgStore/partition.{wildcards.part} \
         -T {CNS_PRE}.ctgStore 1 \
         -P {wildcards.part} \
@@ -141,43 +140,3 @@ rule info:
         'cns.renamed.info'
     shell:
         '$SCRIPT_PATH/../contig_processing/contig_info.py {input} > {output}'
-
-v07_root='/data/PoreTenders/10x_v4CentromereXOnly/freebayes_serge/round2/splitBasedOnNCBI'
-
-rule relevant_ref_ctgs:
-    input:
-        assign=v07_root + '/chm13_v07_chr_contig_assignments.txt',
-        ref=v07_root + '/new_contigs.fasta'
-    output:
-        'v07.relevant.fasta'
-    shell:
-        '''
-        cat {input.assign} | awk -v C=$CHR '{{V="chr"$2; if (V == C) print $1}}' > v07.relevant.txt
-        seqtk subseq {input.ref} v07.relevant.txt > {output}
-        '''
-
-rule align_ref:
-    input:
-        query='cns.renamed.fasta',
-        ref='v07.relevant.fasta'
-    output:
-        'v07.bam'
-    log:
-        'v07.align.log'
-    threads: 6
-    shell:
-        '''
-        $SCRIPT_PATH/../contig_processing/align.sh {input.query} {input.ref} {output} 5 &> {log}
-        '''
-
-#rule align_full_ref:
-#    input:
-#        query='cns.renamed.fasta'
-#        ref=v07_root + '/new_contigs.fasta'
-#    output:
-#        'v07.full.bam'
-#    log:
-#        'v07.full.align.log'
-#    threads: 6
-#    shell:
-#        '$SCRIPT_PATH/../contig_processing/align.sh {input.query} {input.ref} {output} 5 &> {log}'
