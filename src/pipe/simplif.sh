@@ -133,13 +133,13 @@ for it_setting in $(echo $NO_DEADEND_OVERLAP_THRESHOLDS | tr ' ' '\n') ; do
         #FIXME parameterize
         echo "Removing low frequency hets in unique areas"
         $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt 2> low_freq_br_${weak_it}.log
-        $algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --min-alt-ovl $S_MIN_ALT_OVL --max-unique-cov $S_UNIQUE_COV_THR --max-cov-ratio 0.33 --max-length 10000 --max-diff 500 &>> low_freq_br_${weak_it}.log
+        $algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-unique-cov $S_UNIQUE_COV_THR --max-cov-ratio 0.33 --max-length 10000 --max-diff 500 &>> low_freq_br_${weak_it}.log
 
         #FIXME parameterize
         #FIXME isn't it still quite risky?
         echo "Removing other variants in unique areas"
         $scripts_root/resolve_layouts.py simplified.wip.gfa mapping.txt --miniasm $utg_reads > resolved_mapping.wip.txt 2> simple_unique_br_${weak_it}.log
-        $algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --min-alt-ovl $S_MIN_ALT_OVL --max-unique-cov $S_CONS_UNIQUE_COV_THR --max-length 10000 --max-diff 500 --max-cov-ratio 1.5 --max-shortening 50 &>> simple_unique_br_${weak_it}.log
+        $algo_root/simple_bulge_removal simplified.wip.gfa simplified.wip.gfa --compact --prefix m$((cnt++))_ --id-mapping mapping.txt --coverage <($scripts_root/assign_coverage.py resolved_mapping.wip.txt $read_cov) --max-unique-cov $S_CONS_UNIQUE_COV_THR --max-length 10000 --max-diff 500 --max-cov-ratio 1.5 --max-shortening 50 &>> simple_unique_br_${weak_it}.log
 
         #FIXME parameterize
         echo "Removing two-sided nongenomic links"
