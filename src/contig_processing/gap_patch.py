@@ -11,6 +11,9 @@ from collections import defaultdict
 parser = argparse.ArgumentParser(description="Create (raw) file for gap patching")
 parser.add_argument("ctg_info", help="Contig length info file")
 parser.add_argument("align_info", help="Alignment info file")
+parser.add_argument("--max-trim", type=int, default=200, help="Maximal number of base-pairs allowed to be trimmed from contigs (default: 200)")
+parser.add_argument("--reliable-len", type=int, default=10000, help="Minimal alignment length to be considered (default: 10000)")
+parser.add_argument("--max-gap", type=int, default=10000, help="Maximal gap length that can be patched (default: 10000)")
 args = parser.parse_args()
 
 print("Reading contig details from", args.ctg_info, file=sys.stderr)
@@ -41,9 +44,9 @@ df.sort_values(by=['qname', 'qstart'])
 contig_start_mappings = defaultdict(list)
 contig_end_mappings = defaultdict(list)
 
-MAX_TRIM = 200
-RELIABLE_LEN = 10000
-MAX_GAP = 10000
+MAX_TRIM = args.max_trim
+RELIABLE_LEN = args.reliable_len
+MAX_GAP = args.max_gap
 
 start_map = dict()
 end_map = dict()
