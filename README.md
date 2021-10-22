@@ -109,7 +109,7 @@ is NOT!
 Unfortunately, in the latter case (which can happen if the contigs actually overlap; or the gap was too big; or alignments could not be identified) no error message will be generated and the contigs will be erroneously concatenated.
 
 ### Stitching
-If during the patching step (or at any other point) you realized that your resulting contigs should actually overlap you can 'stitch' them using `sg_sandbox/src/consensus/join_ctgs.py` script, which will try to identify overlap between the contigs and then merge them.
+If during the patching step (or if you had to 'split' your layout) you realized that your resulting contigs should actually overlap you can 'stitch' them using `sg_sandbox/src/consensus/join_ctgs.py` script, which will try to identify overlap between the contigs and then merge them.
 Among other parameters you will need to provide it with a stitch 'plan' to indicate the order of the contigs you would like to try concatenating.
 The format is the same as for the layout.txt files, e.g. one or more lines of the format: `chrX.1 chrX.1.1+,chrX.1.2+,...`.
 Confirm that the identified overlaps correspond to what you expected.
