@@ -1,7 +1,7 @@
 # String Graph Sandbox
 Semi-automated prototype pipeline for assembling (pseudo-)haploid genomes, sex chromosomes or highly inbred genomes from HiFi (and ONT data).
 
-In all honesty, the pipeline is so experimental that this documentation might not be enough for effectively assembling anything without contacting at least one of the Sergeys :)
+In all honesty, the pipeline is so experimental that this documentation might not be enough for effectively assembling anything without contacting at least one of the Sergeys (@snurk or @skoren) :)
 
 This repo brings together experimental procedures for:
 * construction of string graph based on HiFi reads
@@ -31,14 +31,14 @@ Call `build.sh`.
 1. Run `src/canu_launch/master_trim.sh` script, which will 
     1. Run read trimming
     2. Run two iterations of read/overlap processing from HiCanu
-    3. Generate `updated_raw.seqStore` necessary for final consensus generation
+    3. Generate `updated_raw.seqStore` folder necessary for final consensus generation
     4. Meyers' string graph construction using modified `miniasm` code
     5. Pruning the graph using custom procedures from the `gfacpp` repo (see `src/pipe/simplif.sh`)
 
-When done, you will have a `simplified.gfa` (as well as `simplified.noseq.gfa` and `simplified.nodes.fasta` in your specified output folder, which is the primary outputs of this part of the pipeline.
+When done, you will have a `microasm/simplified.gfa` (as well as `microasm/simplified.noseq.gfa` and `microasm/simplified.nodes.fasta` in your specified output folder, which is the primary outputs of this part of the pipeline.
 Note that all the sequences are obtained from homopolymer-compressed version of the reads. 
 So unitigs themselves will be (mostly) homopolymer-free (neither their sequences nor lengths directly translate to those of underlying genomic sequences).
-Another output of notice is `resolved_mapping.txt`, providing information about the non-contained-read-level layout of individual graph unitigs.
+Another output of notice is `microasm/resolved_mapping.txt`, providing information about the non-contained-read-level layout of individual graph unitigs.
 
 ## Visualizing the graph
 To visualize the graph you can use the amazing [Bandage](https://github.com/rrwick/Bandage) tool .
@@ -46,7 +46,7 @@ If you are planning to use ONT-based resolution you will need to curate a list o
 Node lengths and coverage estimates (included in `simplified.gfa`) can help with getting an approximation, but you will probably need to vet the list after exploring the graph in Bandage.
 
 ## 'Semi-automated' ONT-based resolution
-This repo includes the original ONT-based repeat resolution strategy developed by Mikko during our CHM13 finishing workshop, slightly modified to be used with string graphs.
+This repo includes the original ONT-based repeat resolution strategy developed by Mikko (@maickrau) during our CHM13 finishing workshop, slightly modified to be used with string graphs.
 To use it you will need to first 'compress' the homopolymer runs in your ONT reads (you can use the `./src/contig_processing/homopolymer_compress.py`, but it is a bit slow) and probably length-filter them to speed things up.
 
 Briefly it will:
@@ -118,9 +118,10 @@ Confirm that the identified overlaps correspond to what you expected.
 You can try running 24X coverage _E.coli_ dataset available [here](https://obj.umiacs.umd.edu/sergek/shared/ecoli_hifi_subset24x.fastq.gz).
 ```
 src/canu_launch/master_trim.sh ~/git/sg_sandbox/src/pipe/config.yaml pipeline_test 23000 subset24x.fastq.gz
-#Check that pipeline_test/simplified.noseq.gfa exists, non-empty and contains a single S-line. Copy segment_name.
+#Check that pipeline_test/microasm/simplified.noseq.gfa exists, non-empty and contains a single S-line. Copy segment_name.
 mkdir -p pipeline_test/consensus/chr
 cd pipeline_test/consensus/chr
 echo 'chr <segment_name>+' > layout.txt
 src/consensus/launch.sh CHR ~/git/sg_sandbox/src/consensus/config.yaml .
 ```
+In the end `consensus/cns.renamed.fasta` should contain 4.7Mb _E.coli_ chromosome.
