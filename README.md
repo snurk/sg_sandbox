@@ -113,3 +113,14 @@ If during the patching step (or if you had to 'split' your layout) you realized 
 Among other parameters you will need to provide it with a stitch 'plan' to indicate the order of the contigs you would like to try concatenating.
 The format is the same as for the layout.txt files, e.g. one or more lines of the format: `chrX.1 chrX.1.1+,chrX.1.2+,...`.
 Confirm that the identified overlaps correspond to what you expected.
+
+## Example
+You can try running 24X coverage _E.coli_ dataset available [here](https://obj.umiacs.umd.edu/sergek/shared/ecoli_hifi_subset24x.fastq.gz).
+```
+src/canu_launch/master_trim.sh ~/git/sg_sandbox/src/pipe/config.yaml pipeline_test 23000 subset24x.fastq.gz
+#Check that pipeline_test/simplified.noseq.gfa exists, non-empty and contains a single S-line. Copy segment_name.
+mkdir -p pipeline_test/consensus/chr
+cd pipeline_test/consensus/chr
+echo 'chr <segment_name>+' > layout.txt
+src/consensus/launch.sh CHR ~/git/sg_sandbox/src/consensus/config.yaml .
+```
