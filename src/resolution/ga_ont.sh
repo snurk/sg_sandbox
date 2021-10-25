@@ -17,6 +17,5 @@ fi
 
 echo "Aligning reads $reads to graph $graph (in $threads threads). Output in $prefix.gaf, log in $prefix.ga_align.log"
 
-ga_bin=$(dirname $(readlink -e $0))/../../GraphAligner/bin
-$ga_bin/GraphAligner -x vg -b 50 --multiseed-DP 1 --X-drop 1000000 --precise-clipping 0.9 --multimap-score-fraction 1 --min-alignment-score 10000 -t $threads -g $graph -f $reads -a $prefix.tmp.gaf &> $prefix.ga_align.log
+GraphAligner -x vg -b 50 --multiseed-DP 1 --X-drop 1000000 --precise-clipping 0.9 --multimap-score-fraction 1 --min-alignment-score 10000 -t $threads -g $graph -f $reads -a $prefix.tmp.gaf &> $prefix.ga_align.log
 mv $prefix.tmp.gaf $prefix.gaf

@@ -16,5 +16,5 @@ if [ "$#" -ge 4 ]; then
     thread_cnt=$4
 fi
 
-~/git/GraphAligner/bin/GraphAligner -t $thread_cnt -x dbg -g $gfa -f $in_fasta -a tmp.$out
+GraphAligner -t $thread_cnt -x dbg -g $gfa -f $in_fasta -a tmp.$out
 mv tmp.$out $out

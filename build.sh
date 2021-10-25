@@ -24,8 +24,3 @@ echo "Building gfacpp tool collection"
 cd $path/gfacpp
 make $@
 cd -
-
-echo "Building GraphAligner"
-cd $path/GraphAligner
-make $@
-cd -

@@ -17,9 +17,3 @@ echo "Building gfacpp tool collection"
 cd $path/gfacpp
 make clean
 cd -
-
-echo "Building GraphAligner"
-cd $path/GraphAligner
-make clean
-cd -
-
