@@ -3,17 +3,17 @@ set -eou
 
 path=$(dirname $(readlink -e $0))
 
-echo "Building Canu"
+echo "Cleaning Canu"
 cd $path/canu/src
 make clean
 cd -
 
-echo "Building miniasm"
+echo "Cleaning miniasm"
 cd $path/miniasm
 make clean
 cd -
 
-echo "Building gfacpp tool collection"
+echo "Cleaning gfacpp tool collection"
 cd $path/gfacpp
 make clean
 cd -
