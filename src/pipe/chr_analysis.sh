@@ -6,8 +6,6 @@ if [ "$#" -lt 5 ]; then
     exit 1
 fi
 
-module load bedtools
-
 root=$(dirname $(readlink -e $0))
 
 out_dir=$1
