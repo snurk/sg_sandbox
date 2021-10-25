@@ -15,7 +15,7 @@ An early version of this pipeline has been used in assembling a telomere-to-telo
 Requirements might differ depending on which part(s) of the pipeline you are planning to use, but you might need:
 
 * Modern C++ compiler
-* `seqtk`, `minimap2`, `samtools` and `bedtools` in PATH
+* `GraphAligner` (v1.0.13+), `seqtk`, `minimap2`, `samtools` and `bedtools` in PATH
 * `Python3` environment with `snakemake`, `biopython`, `parasail-python` and `pysam` (see also `requirements.txt`)
 * environment for compiling GraphAligner see [here](https://github.com/maickrau/GraphAligner)
 
