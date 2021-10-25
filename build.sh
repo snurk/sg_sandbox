@@ -1,6 +1,4 @@
 #!/bin/bash
-#Should be probably called within GraphAligner conda environment
-#conda activate GraphAligner ; ./build.sh -j3 ; conda deactivate
 set -eou
 
 path=$(dirname $(readlink -e $0))
