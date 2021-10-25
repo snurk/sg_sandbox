@@ -12,11 +12,11 @@ This repo brings together experimental procedures for:
 An early version of this pipeline has been used in assembling a telomere-to-telomere draft of CHM13 human genome.
 
 ## Requirements
-Requirements might differ depending on which part(s) of the pipeline you are planning to use, but you might probably need:
+Requirements might differ depending on which part(s) of the pipeline you are planning to use, but you might need:
 
 * Modern C++ compiler
-* Seqtk, minimap2
-* `Python3` environment with `Snakemake`, `biopython`, `parasail-python` and `pysam`
+* `seqtk`, `minimap2`, `samtools` and `bedtools` in PATH
+* `Python3` environment with `snakemake`, `biopython`, `parasail-python` and `pysam` (see also `requirements.txt`)
 * environment for compiling GraphAligner see [here](https://github.com/maickrau/GraphAligner)
 
 ## Compilation
@@ -68,15 +68,15 @@ If you really want to go along a similar path to one we've been walking -- conta
 If you have done ONT resolution and/or manual editing of the GFA in Bandage you might want to 're-compact' the graph, e.g. to facilitate further layout picking or another round of ONT resolution.
 This can be done with the `src/process_simplified.sh`.
 
-Now you will need to form the layout.txt file(s) specifying the paths for which you want to compute the consensus sequences.
+Now you will need to form the `layout.txt` file(s) specifying the paths for which you want to compute the consensus sequences.
 
-Each line of the layout.txt file should have the following format: `<name> <node1>[+,-],<node2>[+,-],...`
+Each line of the `layout.txt` file should have the following format: `<name> <node1>[+,-],<node2>[+,-],...`
 
 **NB:** Bangage's *Output/Specify exact path* functionality is very convenient for selecting multi-node paths.
 
 ## Consensus and post-processing
 ### Consensus
-Consensus for the identified layouts can be obtained by running `src/consensus/launch.sh`.
+Consensus for the identified layouts can be obtained by running `src/consensus/launch.sh`, providing the working folder with `layout.txt` file as one of the parameters. The resulting output will be in `cns.renamed.fasta` file in the that folder.
 
 Provided `src/consensus/config.yaml` should not need any modification if you were building the graph via the `src/canu_launch/master_trim.sh`.
 
