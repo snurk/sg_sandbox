@@ -12,7 +12,7 @@ This repo brings together experimental procedures for:
 An early version of this pipeline has been used in assembling a telomere-to-telomere draft of CHM13 human genome.
 
 ## Requirements
-Requirements might differ depending on which part(s) of the pipeline you are planning to use, but you might need:
+Requirements differ depending on which part(s) of the pipeline you are planning to use, but you might need:
 
 * Modern C++ compiler
 * `GraphAligner` (v1.0.13+), `seqtk`, `minimap2`, `samtools` and `bedtools` in PATH
@@ -20,7 +20,7 @@ Requirements might differ depending on which part(s) of the pipeline you are pla
 * environment for compiling GraphAligner see [here](https://github.com/maickrau/GraphAligner)
 
 ## Compilation
-Call `build.sh` within the environment that can compile GraphAligner.
+Call `build.sh`.
 
 ## Building the graph
 
