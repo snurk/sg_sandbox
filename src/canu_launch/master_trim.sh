@@ -17,6 +17,7 @@ mkdir -p $out_dir
 if [ ! -f $out_dir/reads.fa.gz ] ; then
     rm -f $out_dir/reads.fa.gz.tmp
     for reads in ${@:4} ; do
+        echo "Trimming $reads to length $max_len"
         seqtk trimfq -L $max_len $reads | seqtk seq -A | gzip --fast >> $out_dir/reads.fa.gz.tmp
     done
     mv $out_dir/reads.fa.gz.tmp $out_dir/reads.fa.gz
@@ -28,4 +29,5 @@ export CANU_BIN=$(readlink -e $base_path/../../canu/build/bin/)
 export MAX_BOGART_LEN=1000000
 export SG_CONFIG=$(readlink -e $config)
 
+echo "Launching Canu"
 $base_path/canu.sh $out_dir/canu $out_dir/reads.fa.gz onSuccess="$base_path/on_init_complete.sh"
