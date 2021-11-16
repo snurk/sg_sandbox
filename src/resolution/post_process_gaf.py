@@ -168,7 +168,7 @@ def trim_end(segment_descs, tot, end):
         return 0, segment_descs
 
 
-directed_seg_pattern=re.compile(r"[<>]\w+")
+directed_seg_pattern=re.compile(r"[<>][\w\-\_]+")
 records = []
 
 with open(args.result, 'w') as out:
