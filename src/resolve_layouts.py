@@ -1,21 +1,43 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+from __future__ import print_function
+from __future__ import division
 
+import re
 import sys
 from collections import defaultdict
 import argparse
 
+gaf_path_pattern=re.compile(r"[<>][\w\-\_]+")
+
+def transform_from_gaf(s):
+    if s[0] == '>':
+        return s[1:] + '+'
+    elif s[0] == '<':
+        return s[1:] + '-'
+    assert(false)
+
+def transform_to_gaf(s):
+    if s[-1] == '+':
+        return '>' + s[:-1]
+    elif s[-1] == '-':
+        return '<' + s[:-1]
+    assert(false)
+
+def process_path(l):
+    if l[0] == '>' or l[0] == '<':
+        return [transform_from_gaf(t) for t in gaf_path_pattern.findall(l)]
+    else:
+        return [t.strip() for t in l.split(',')]
+
 parser = argparse.ArgumentParser(description="Recursive resolution of the layouts")
 parser.add_argument("fragment_names", help="File with names of the fragments to resolve OR layout file OR .gfa file -- segment names will be extracted")
 parser.add_argument("composition", help="File specifying composition of intermediate fragments")
-parser.add_argument("--duplicate-shift", type=int, default=0, help="Ids shift to do if dealing with multiple occurences of the same fragment")
 parser.add_argument("--resolved-marker", help="String marking the nodes that got duplicated during repeat resolution (e.g. '_i'). Part of the name past the marker will be ignored.")
-parser.add_argument("--partial-resolve", action="store_true", help="Allow 'partial' resolving of layout. By default fails if can't resolve down to path of readXXX fragments")
+parser.add_argument("--partial-resolve", action="store_true", help="Allow 'partial' resolving of layout. By default fails if can't resolve down to path of <resolved-prefix>.* fragments")
+parser.add_argument("--gaf-paths", action="store_true", help="Use GAF path format ([<>]-prefix instead of [+-]-suffix)")
 parser.add_argument("--miniasm", help="File with miniasm layout via 'a' lines")
+parser.add_argument("--resolved-prefix", default='read', help="Prefix of completely resolved elements")
 args = parser.parse_args()
-
-duplicate_shift = args.duplicate_shift
-
-assert duplicate_shift == 0 or not args.partial_resolve
 
 mapping=defaultdict(list)
 
@@ -39,7 +61,8 @@ with open(args.composition, 'r') as compress_mapping:
     for l in compress_mapping:
         s = l.split()
         assert s[0] not in mapping
-        mapping[s[0]] = s[1].split(',')
+        mapping[s[0]] = process_path(s[1])
+
 print("Loaded", file=sys.stderr)
 
 names = []
@@ -63,7 +86,7 @@ else:
             s = l.strip().split()
             names.append(s[0].strip())
             if len(s) > 1:
-                mapping[s[0]] = s[1].split(',')
+                mapping[s[0]] = process_path(s[1])
 
     print("Loaded", file=sys.stderr)
 
@@ -84,15 +107,9 @@ def need_swap(n_o):
         return True
     assert False
 
-def resolve(n_o, resolved, duplicate = False):
-    if n_o.startswith('read'):
-        if not duplicate or duplicate_shift == 0:
-            #minor optimization
-            resolved.append(n_o)
-        else:
-            i = int(n_o[4:-1])
-            print("Shifting %d into %d" % (i, i + duplicate_shift), file=sys.stderr)
-            resolved.append('read%d%s' % ((i + duplicate_shift), n_o[-1]))
+def resolve(n_o, resolved):
+    if n_o.startswith(args.resolved_prefix):
+        resolved.append(n_o)
         return
 
     name = n_o[:-1]
@@ -106,15 +123,9 @@ def resolve(n_o, resolved, duplicate = False):
         print("Problem with ", name, file=sys.stderr)
 
     assert args.partial_resolve or name in mapping
-    if duplicate_shift > 0:
-        assert usage[name] < 2
 
-    assert not duplicate or usage[name] > 0
-    d = usage[name] > 0
-    #if d and duplicate_shift > 0:
-    if d:
-        print("Will use duplicates to resolve", name, file=sys.stderr)
-        #assert False
+    if usage[name] > 0:
+        print(name, "used multiple times", file=sys.stderr)
 
     usage[name] += 1
 
@@ -127,15 +138,18 @@ def resolve(n_o, resolved, duplicate = False):
     if need_swap(n_o):
         for i in range(len(parts),0,-1):
             p = parts[i - 1]
-            resolve(swap_sign(p), resolved, d)
+            resolve(swap_sign(p), resolved)
     else:
         for p in parts:
-            resolve(p, resolved, d)
+            resolve(p, resolved)
 
 print("Resolving segment composition", file=sys.stderr)
 for s in names:
     resolved = []
     resolve(s + '+', resolved)
-    print(s, ','.join(resolved))
+    if args.gaf_paths:
+        print(s, ''.join([transform_to_gaf(s) for s in resolved]))
+    else:
+        print(s, ','.join(resolved))
 
 print("Layout resolution done", file=sys.stderr)
