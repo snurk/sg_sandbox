@@ -58,7 +58,7 @@ for _, row in ctgs.iterrows():
 
 def report_ctg(name):
     assert start_map[name] < end_map[name]
-    print("%s: %s\t%d\t%d\t.\t0\t+" % (name, name, start_map[name], end_map[name]))
+    print("%s ctg: %s\t%d\t%d\t.\t0\t+" % (name, name, start_map[name], end_map[name]))
 
 def compatible(e, s):
     assert e.rname == s.rname
@@ -68,12 +68,12 @@ def compatible(e, s):
     if not e.reverse:
         if s.rstart > e.rend and s.rstart < e.rend + MAX_GAP:
             print("Closing gap between %s and %s with %s+" % (e.qname, s.qname, e.rname), file=sys.stderr)
-            print("%s: %s\t%d\t%d\t.\t0\t+" % (e.qname, e.rname, e.rend, s.rstart))
+            print("%s patch: %s\t%d\t%d\t.\t0\t+" % (e.qname, e.rname, e.rend, s.rstart))
             return True
     else:
         if e.rstart > s.rend and e.rstart < s.rend + MAX_GAP:
             print("Closing gap between %s and %s with %s-" % (e.qname, s.qname, e.rname), file=sys.stderr)
-            print("%s: %s\t%d\t%d\t.\t0\t-" % (e.qname, s.rname, s.rend, e.rstart))
+            print("%s patch: %s\t%d\t%d\t.\t0\t-" % (e.qname, s.rname, s.rend, e.rstart))
             return True
     return False
 
