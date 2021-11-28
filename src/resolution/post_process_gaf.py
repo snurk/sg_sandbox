@@ -174,7 +174,7 @@ records = []
 with open(args.result, 'w') as out:
     for line in open(args.paths, 'r'):
         print('=======================================')
-        s = line.split()
+        s = line.split('\t')
         l = s[1]
         start = int(s[2])
         end = int(s[3])
@@ -215,6 +215,6 @@ with open(args.result, 'w') as out:
                     end = tot
 
         if args.gaf_paths:
-            print("%s %s %d %d" % (s[0], ''.join([transform_back(s) for s in segment_descs]), start, end), file=out)
+            print("%s\t%s\t%d\t%d" % (s[0], ''.join([transform_back(s) for s in segment_descs]), start, end), file=out)
         else:
-            print("%s %s %d %d" % (s[0], ','.join(segment_descs), start, end), file=out)
+            print("%s\t%s\t%d\t%d" % (s[0], ','.join(segment_descs), start, end), file=out)

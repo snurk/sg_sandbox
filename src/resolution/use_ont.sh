@@ -32,14 +32,14 @@ awk '$1!="S"{print;}$1=="S"{print "S\t" $2 "\t*\tLN:i:" length($3) "\t" $4 "\t" 
 #grep "^S" $out/noseq.gfa | sed 's/LN:i://g' | sed 's/RC:i://g' | awk '{print $2,$4,$5/$4}' > nodecovs.csv
 #awk '{if (($2 >= 20000 && $3 >= 15 && $3 <= 30) || ($2 >= 50000 && $3 >= 10 && $3 <= 35) || $2 >= 100000) print $1}' < nodecovs.csv > unique_nodes.txt
 
-sed 's/ <unknown description>//g' $out/ga_ont.gaf | awk -F "\t" '{split($1, name, " "); print name[1],($4-$3)/$2,$16,$6,$8,$9}' | sed 's/id:f://g' | awk  '{if ($2 > 0.9 && $3 >= 0.9) print $1,$4,$5,$6}' > $out/ont_filtered.tsv
+sed 's/ <unknown description>//g' $out/ga_ont.gaf | awk -F "\t" '{split($1, name, " "); print name[1],($4-$3)/$2,$16,$6,$8,$9}' | sed 's/id:f://g' | awk -v OFS='\t' '{if ($2 > 0.9 && $3 >= 0.9) print $1,$4,$5,$6}' > $out/ont_filtered.tsv
 
 $base_path/post_process_gaf.py --trusted-overhang 5000 --gaf-paths $out/ont_filtered.tsv $out/noseq.gfa $out/ont_processed.tsv &> $out/ont_process.log
 
 #~/git/ngs_scripts/post_process_gaf.py --trusted-overhang 5000 ont_filtered.tsv simplified.noseq.gfa ont_processed.format.tsv
 
 mikko_scripts=$base_path/../../tangle-resolution/scripts
-cut -f 2 -d ' ' < $out/ont_processed.tsv | $mikko_scripts/find_bridges.py $unique > $out/ont_bridges.txt
+cut -f 2 < $out/ont_processed.tsv | $mikko_scripts/find_bridges.py $unique > $out/ont_bridges.txt
 
 grep -v '(' < $out/ont_bridges.txt | grep -vP '^$' | $mikko_scripts/connections_filter.py | sort > $out/bridging_seq_all.txt
 #grep -v '(' < $out/ont_bridges.txt | grep -vP '^$' | $mikko_scripts/remove_wrong_connections_2.py | sort > $out/bridging_seq_all.txt
