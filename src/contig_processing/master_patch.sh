@@ -39,5 +39,6 @@ echo ">$chr" > $out_dir/noformat.fasta
 #bedtools getfasta -s -fi $out_dir/for_patch.fasta -bed $out_dir/patch.bed | grep -v ">" >> $out_dir/noformat.fasta
 #TODO support streaming and get rid of intermediate fasta files
 $root/merge_reads.py $out_dir/patch.bed $out_dir/for_patch.fasta | grep -v ">" | tr -d '\n' >> $out_dir/noformat.fasta
+echo >> $out_dir/noformat.fasta
 fold -c $out_dir/noformat.fasta > $out_dir/$chr.fasta
 rm $out_dir/noformat.fasta
