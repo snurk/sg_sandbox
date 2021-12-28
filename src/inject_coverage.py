@@ -26,6 +26,8 @@ seg_cov=dict()
 with open(args.coverage, 'r') as f:
     for l in f:
         s = l.split()
+        if s[1] == "coverage":
+            continue
         seg_cov[s[0]] = float(s[1])
 
 if args.gfa:
@@ -43,7 +45,7 @@ for l in stream:
         length = segment_length(s)
         assert seg in seg_cov or args.allow_absent
         cov = seg_cov[seg] if seg in seg_cov else 0.
-        print('%s\tRC:i:%d' % ('\t'.join(s), int(length * cov)))
+        print('%s\tRC:i:%d\tll:f:%.1f' % ('\t'.join(s), int(length * cov), cov))
     else:
         print(l.strip())
 
