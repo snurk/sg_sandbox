@@ -73,7 +73,7 @@ Now you will need to form the `layout.txt` file(s) specifying the paths for whic
 
 Each line of the `layout.txt` file should have the following format: `<name> <node1>[+,-],<node2>[+,-],...`
 
-**NB:** Bangage's *Output/Specify exact path* functionality is very convenient for selecting multi-node paths.
+**NB:** Bandage's *Output/Specify exact path* functionality is very convenient for selecting multi-node paths.
 
 ## Consensus and post-processing
 ### Consensus
