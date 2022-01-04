@@ -10,7 +10,7 @@ This repo brings together experimental procedures for:
 * generation of consensus sequences based on the specified graph paths
 
 An early version of this pipeline has been used in assembling a telomere-to-telomere draft of CHM13 human genome.
-Zenodo [record](https://zenodo.org/record/5598259) (DOI:10.5281/zenodo.5598259) corresponds to commit `9f58c762d0504d1fcc016e64c333eea04ce660fa`.
+Zenodo [record](https://zenodo.org/record/5819001) (DOI:10.5281/zenodo.5819001) corresponds to commit `9f58c762d0504d1fcc016e64c333eea04ce660fa`.
 
 ## Requirements
 Requirements differ depending on which part(s) of the pipeline you are planning to use, but you might need:
