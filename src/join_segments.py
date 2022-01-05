@@ -123,21 +123,20 @@ cigars = read_cigars(args.gfa)
 
 directed_seg_pattern=re.compile(r"[<>]\w+")
 records = []
-i = 0
 for line in open(args.paths, 'r'):
-    i += 1
     print('=======================================')
     s = line.split()
+    if s[0] == 'name':
+        continue
+
     l = s[1]
     print('Processing ', l)
-    if len(l) == 0:
-        continue
+    assert(len(l) != 0)
 
     if l[0] == '>' or l[0] == '<':
         l = ','.join([transform_dir_seg(s) for s in directed_seg_pattern.findall(l)])
 
     seq, circular = make_sequence(cigars, contig_dict, l, args.trim_flanks_to)
-    #name = 'curated%d length=%d circular=%s' % (i, len(seq), 'true' if circular else 'false')
     name = s[0]
     print('Writing', name)
     records.append(SeqRecord(seq, id=name, description=''))
