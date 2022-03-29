@@ -118,11 +118,11 @@ Confirm that the identified overlaps correspond to what you expected.
 ## Example
 You can try running 24X coverage _E.coli_ dataset available [here](https://obj.umiacs.umd.edu/sergek/shared/ecoli_hifi_subset24x.fastq.gz).
 ```
-src/canu_launch/master_trim.sh ~/git/sg_sandbox/src/pipe/config.yaml pipeline_test 23000 subset24x.fastq.gz
+src/canu_launch/master_trim.sh src/pipe/config.yaml pipeline_test 23000 subset24x.fastq.gz
 #Check that pipeline_test/microasm/simplified.noseq.gfa exists, non-empty and contains a single S-line. Copy segment_name.
 mkdir -p pipeline_test/consensus/chr
 cd pipeline_test/consensus/chr
 echo 'chr <segment_name>+' > layout.txt
-src/consensus/launch.sh CHR ~/git/sg_sandbox/src/consensus/config.yaml .
+src/consensus/launch.sh CHR src/consensus/config.yaml .
 ```
 In the end `consensus/cns.renamed.fasta` should contain 4.7Mb _E.coli_ chromosome.
