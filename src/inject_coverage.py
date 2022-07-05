@@ -26,7 +26,7 @@ seg_cov=dict()
 with open(args.coverage, 'r') as f:
     for l in f:
         s = l.split()
-        if s[1] == "coverage":
+        if s[0] == "node" || s[1] == "coverage":
             continue
         seg_cov[s[0]] = float(s[1])
 
