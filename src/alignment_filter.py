@@ -77,7 +77,7 @@ print("Using min alignment length %d, min query fraction %.2f and min alignment 
 
 if args.bed:
     print("Will write covered region info to BED file", args.bed, file=sys.stderr)
-    print("Will trim ", args.bed_trim, " bp from each side of covered region")
+    print("Will trim ", args.bed_trim, " bp from each side of covered region", file=sys.stderr)
     out_bed = open(args.bed, 'w')
 
 if args.filtered:
