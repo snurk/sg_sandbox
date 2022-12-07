@@ -41,6 +41,7 @@ def insertion_cnt(cigartuples):
 parser = argparse.ArgumentParser(description="Filter alignments in SAM based on various criteria")
 parser.add_argument("sam", nargs='?', help="Input SAM/BAM alignment file (by default reading SAM from stdin)")
 parser.add_argument("--min-len", type=int, default=0, help="Minimal length of alignment (default 0)")
+parser.add_argument("--min-mapq", type=int, default=0, help="Minimal alignment MAPQ (default 0)")
 parser.add_argument("--query-frac", type=float, default=0., help="Minimal fraction of the query sequence covered (default 0.)")
 parser.add_argument("--min-idy", type=float, default=0., help="Minimal alignment identity defined as 1. - (edit_distance / alignment_matrix_length) (default 0.)")
 parser.add_argument("--use-secondary", action="store_true", help="Consider secondary alignments")
@@ -127,6 +128,9 @@ for r in alignment:
         continue
 
     assert r.cigarstring is not None
+
+    if r.mapping_quality < args.min_mapq:
+        continue
 
     if r.query_alignment_length < min_len:
         continue
