@@ -58,13 +58,15 @@ if args.sam:
     print("Filtering alignments from", args.sam, file=sys.stderr)
     alignment = AlignmentFile(args.sam, 'r' + guess_sam_bam(args.sam), check_sq=False)
 else:
+    #TODO removing this bit improved stability, investigate timeouts
     # Check that there is input ready
-    if sys.stdin in select.select([sys.stdin], [], [], 0.)[0]:
-        alignment = AlignmentFile(sys.stdin, 'r', check_sq=False)
-    else:
-        parser.print_help(sys.stderr)
-        print("Tried reading from stdin, but it was empty!", file=sys.stderr)
-        sys.exit(3)
+    #if sys.stdin in select.select([sys.stdin], [], [], 0.)[0]:
+    #    alignment = AlignmentFile(sys.stdin, 'r', check_sq=False)
+    #else:
+    #    parser.print_help(sys.stderr)
+    #    print("Tried reading from stdin, but it was empty!", file=sys.stderr)
+    #    sys.exit(3)
+    alignment = AlignmentFile(sys.stdin, 'r', check_sq=False)
 
 if args.query_frac > 1.:
     print("Minimal covered fraction of the query sequence can not exceed 1. Specified", args.query_frac, file=sys.stderr)
