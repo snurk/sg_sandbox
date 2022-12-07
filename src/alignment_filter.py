@@ -181,7 +181,7 @@ for r in alignment:
         if r.reference_length < 2 * args.bed_trim:
             print("WARN reference span %d to small for used trim %d" % (r.reference_length, args.bed_trim), file=sys.stderr)
         else:
-            print("%s\t%d\t%d\t%s" % (alignment.get_reference_name(r.reference_id), r.reference_start + args.bed_trim, r.reference_end - args.bed_trim, r.query_name), file=out_bed)
+            print("%s\t%d\t%d\t%s\t0\t%s" % (alignment.get_reference_name(r.reference_id), r.reference_start + args.bed_trim, r.reference_end - args.bed_trim, r.query_name, "-" if r.is_reverse else "+"), file=out_bed)
 
 if args.filtered:
     out_alignment.close()
