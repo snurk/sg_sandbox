@@ -6,7 +6,7 @@ from statistics import median_low
 from collections import defaultdict
 
 def parse_read_rec(r):
-    return r.replace('read', '').replace('+', '').replace('-', '')
+    return r.replace('read', '')[:-1]
 
 if len(sys.argv) < 3:
     print("Usage: %s <unitig layout> <read coverage>" % sys.argv[0], file=sys.stderr)
@@ -24,4 +24,4 @@ with open(read_cov_fn, 'r') as f:
 with open(layout_fn, 'r') as f:
     for l in f:
         s = l.split()
-        print('%s %d' % (s[0], median_low([read_cov[parse_read_rec(r)] for r in s[1].split(',')])))
+        print('%s\t%d' % (s[0], median_low([read_cov[parse_read_rec(r)] for r in s[1].split(',')])))

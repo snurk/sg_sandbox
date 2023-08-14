@@ -148,8 +148,8 @@ for s in names:
     resolved = []
     resolve(s + '+', resolved)
     if args.gaf_paths:
-        print(s, ''.join([transform_to_gaf(s) for s in resolved]))
+        print("%s\t%s" % (s, ''.join([transform_to_gaf(s) for s in resolved])))
     else:
-        print(s, ','.join(resolved))
+        print("%s\t%s" % (s, ','.join(resolved)))
 
 print("Layout resolution done", file=sys.stderr)
